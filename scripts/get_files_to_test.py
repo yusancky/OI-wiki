@@ -123,7 +123,8 @@ def get_files_to_test(filenames):
         f.write('\n'.join(output_lines))
         print('\n'.join(output_lines))
 
-with open("res.txt") as file_object:
-    lines = file_object.readlines()
-changed_files = [name for line in lines for name in line.split()]
-get_files_to_test(changed_files)
+if __name__ == "__main__":
+    with open("res.txt") as file_object:
+        lines = file_object.readlines()
+    changed_files = [name for line in lines for name in line.split()]
+    get_files_to_test(changed_files)
