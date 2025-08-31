@@ -4,124 +4,106 @@
 
 import os
 
-def get_files_to_test(filenames):
-    mainfiles_to_test_cpp = set()
-    mainfiles_to_test_py = set()
-    mainfiles_cpp, auxfiles_cpp, examples_cpp, skiptest_cpp = [], [], [], []
-    mainfiles_py, auxfiles_py, examples_py, skiptest_py = [], [], [], []
+
+def collect_files(main_ext, filenames):
+    mainfiles_to_test, mainfiles, auxfiles, examples, skiptest = set(), [], [], [], []
 
     for filename in filenames:
-        dirname, basename, extname = os.path.dirname(filename), os.path.splitext(os.path.basename(filename))[0], os.path.splitext(filename)[1]
-        
-        if extname.endswith('.cpp'):
-            mainfile = os.path.normpath(os.path.join(dirname, basename.split('.')[0] + '.cpp'))
-            if mainfile in mainfiles_to_test_cpp:
+        dirname = os.path.dirname(filename)
+        basename = os.path.splitext(os.path.basename(filename))[0]
+        extname = os.path.splitext(filename)[1]
+
+        if extname.endswith(main_ext):
+            mainfile = os.path.normpath(
+                os.path.join(dirname, basename.split(".")[0] + main_ext)
+            )
+            if mainfile in mainfiles_to_test:
                 continue
-            mainfiles_to_test_cpp.add(mainfile)
-            
+            mainfiles_to_test.add(mainfile)
+
             temp_auxfiles = []
             for root, _, files in os.walk(dirname):
                 for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.cpp'):
+                    if file.split(".")[0] == basename.split(".")[0] and file.endswith(
+                        main_ext
+                    ):
                         temp_auxfiles.append(os.path.normpath(os.path.join(root, file)))
-            
+
             temp_examples = []
-            for root, _, files in os.walk(dirname.replace('code', 'examples')):
+            for root, _, files in os.walk(dirname.replace("code", "examples")):
                 for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.in') and os.path.exists(os.path.join(root, file.replace('.in', '.ans'))):
+                    if (
+                        file.split(".")[0] == basename.split(".")[0]
+                        and file.endswith(".in")
+                        and os.path.exists(
+                            os.path.join(root, file.replace(".in", ".ans"))
+                        )
+                    ):
                         temp_examples.append(os.path.normpath(os.path.join(root, file)))
-            
-            temp_skiptest = False
-            if os.path.exists(os.path.join(dirname, basename + '.skip_test')):
-                temp_skiptest = True
-            
-            mainfiles_cpp.append(mainfile)
-            auxfiles_cpp.append(temp_auxfiles)
-            examples_cpp.append(temp_examples)
-            skiptest_cpp.append(temp_skiptest)
-            
-        elif extname.endswith('.py'):
-            mainfile = os.path.normpath(os.path.join(dirname, basename.split('.')[0] + '.py'))
-            if mainfile in mainfiles_to_test_py:
+
+            temp_skiptest = os.path.exists(
+                os.path.join(dirname, basename + ".skip_test")
+            )
+
+            mainfiles.append(mainfile)
+            auxfiles.append(temp_auxfiles)
+            examples.append(temp_examples)
+            skiptest.append(temp_skiptest)
+
+        elif extname.endswith((".in", ".ans")):
+            mainfile = os.path.normpath(
+                os.path.join(
+                    dirname.replace("examples", "code"),
+                    basename.split(".")[0] + main_ext,
+                )
+            )
+            if mainfile in mainfiles_to_test or not os.path.exists(mainfile):
                 continue
-            mainfiles_to_test_py.add(mainfile)
-            
+            mainfiles_to_test.add(mainfile)
+
             temp_auxfiles = []
-            for root, _, files in os.walk(dirname):
+            for root, _, files in os.walk(dirname.replace("examples", "code")):
                 for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.py'):
+                    if file.split(".")[0] == basename.split(".")[0] and file.endswith(
+                        main_ext
+                    ):
                         temp_auxfiles.append(os.path.normpath(os.path.join(root, file)))
-            
-            temp_examples = []
-            for root, _, files in os.walk(dirname.replace('code', 'examples')):
-                for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.in') and os.path.exists(os.path.join(root, file.replace('.in', '.ans'))):
-                        temp_examples.append(os.path.normpath(os.path.join(root, file)))
-            
-            temp_skiptest = False
-            if os.path.exists(os.path.join(dirname, basename + '.skip_test')):
-                temp_skiptest = True
-            
-            mainfiles_py.append(mainfile)
-            auxfiles_py.append(temp_auxfiles)
-            examples_py.append(temp_examples)
-            skiptest_py.append(temp_skiptest)
-            
-        elif extname.endswith(('.in', '.ans')):
-            mainfile_cpp = os.path.normpath(os.path.join(dirname.replace('examples', 'code'), basename.split('.')[0] + '.cpp'))
-            if mainfile_cpp in mainfiles_to_test_cpp or not os.path.exists(mainfile_cpp):
-                continue
-            mainfiles_to_test_cpp.add(mainfile_cpp)
-            
-            temp_auxfiles_cpp = []
-            for root, _, files in os.walk(dirname.replace('examples', 'code')):
-                for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.cpp'):
-                        temp_auxfiles_cpp.append(os.path.normpath(os.path.join(root, file)))
-            temp_examples_cpp = [os.path.normpath(os.path.join(dirname, basename + '.in'))]
-            
-            temp_skiptest_cpp = False
-            if os.path.exists(os.path.join(dirname.replace('examples', 'code'), basename + '.skip_test')):
-                temp_skiptest_cpp = True
-            
-            mainfiles_cpp.append(mainfile_cpp)
-            auxfiles_cpp.append(temp_auxfiles_cpp)
-            examples_cpp.append(temp_examples_cpp)
-            skiptest_cpp.append(temp_skiptest_cpp)
 
-            mainfile_py = os.path.normpath(os.path.join(dirname.replace('examples', 'code'), basename.split('.')[0] + '.py'))
-            if mainfile_py in mainfiles_to_test_py or not os.path.exists(mainfile_py):
-                continue
-            mainfiles_to_test_py.add(mainfile_py)
-            
-            temp_auxfiles_py = []
-            for root, _, files in os.walk(dirname.replace('examples', 'code')):
-                for file in files:
-                    if file.split('.')[0] == basename.split('.')[0] and file.endswith('.py'):
-                        temp_auxfiles_py.append(os.path.normpath(os.path.join(root, file)))
-            
-            temp_examples_py = [os.path.normpath(os.path.join(dirname, basename + '.in'))]
-            
-            temp_skiptest_py = False
-            if os.path.exists(os.path.join(dirname.replace('examples', 'code'), basename + '.skip_test')):
-                temp_skiptest_py = True
-            
-            mainfiles_py.append(mainfile_py)
-            auxfiles_py.append(temp_auxfiles_py)
-            examples_py.append(temp_examples_py)
-            skiptest_py.append(temp_skiptest_py)
+            temp_examples = [os.path.normpath(os.path.join(dirname, basename + ".in"))]
 
-    with open(os.environ.get("GITHUB_OUTPUT"), 'w') as f:
+            temp_skiptest = os.path.exists(
+                os.path.join(
+                    dirname.replace("examples", "code"), basename + ".skip_test"
+                )
+            )
+
+            mainfiles.append(mainfile)
+            auxfiles.append(temp_auxfiles)
+            examples.append(temp_examples)
+            skiptest.append(temp_skiptest)
+
+    return mainfiles, auxfiles, examples, skiptest
+
+
+def get_files_to_test(filenames):
+    languages = ["cpp", "py"]
+
+    outputs = {}
+    for lang in languages:
+        outputs[lang] = collect_files(f".{lang}", filenames)
+
+    with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
         output_lines = []
-        
-        if mainfiles_cpp:
-            output_lines.append(f'files_to_test_cpp={(mainfiles_cpp, auxfiles_cpp, examples_cpp, skiptest_cpp)}')
-        
-        if mainfiles_py:
-            output_lines.append(f'files_to_test_py={(mainfiles_py, auxfiles_py, examples_py, skiptest_py)}')
-        
-        f.write('\n'.join(output_lines))
-        print('\n'.join(output_lines))
+        for lang, (mainfiles, auxfiles, examples, skiptest) in outputs.items():
+            if mainfiles:
+                output_lines.append(
+                    f"files_to_test_{lang}={(mainfiles, auxfiles, examples, skiptest)}"
+                )
+            any_lang = any(not s for s in skiptest) if mainfiles else False
+            output_lines.append(f"any_{lang}={str(any_lang).lower()}")
+        f.write("\n".join(output_lines))
+        print("\n".join(output_lines))
+
 
 if __name__ == "__main__":
     with open("res.txt") as file_object:
