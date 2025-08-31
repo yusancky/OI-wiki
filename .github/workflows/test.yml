@@ -14,7 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
-      files_to_test: ${{ steps.file-list.outputs.files_to_test }}
+      files_to_test: ${{ steps.get-files.outputs.files_to_test }}
+      any_cpp: ${{ steps.get-files.outputs.any_cpp }}
+      any_py: ${{ steps.get-files.outputs.any_py }}
     steps:
       - uses: actions/checkout@v4
         with:
