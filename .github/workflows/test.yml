@@ -224,9 +224,6 @@ jobs:
     needs: file-list
     if: needs.file-list.outputs.any_py == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      any_changed: ${{ steps.changed-files.outputs.any_changed }}
-      files_to_test: ${{ steps.get-files.outputs.files_to_test }}
     steps:
       - uses: actions/checkout@v4
         with:
