@@ -9,8 +9,8 @@ on:
       - master
 
 jobs:
-  correctness:
-    name: OI-wiki Offline Test
+  cpp-correctness:
+    name: OI-wiki Offline Test (C++)
     runs-on: ubuntu-latest
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
@@ -57,8 +57,8 @@ jobs:
           FILES_TO_TEST: ${{ steps.GetFiles.outputs.files_to_test }}
         run: uv run python scripts/correctness_check.py
 
-  undefinedbehaviors-ubuntu:
-    name: UB Check - x86_64 Ubuntu
+  cpp-undefinedbehaviors-ubuntu:
+    name: UB Check - x86_64 Ubuntu (C++)
     needs: correctness
     if: ${{ needs.correctness.outputs.any_changed == 'true' }}
     runs-on: ubuntu-latest
@@ -80,8 +80,8 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
 
-  undefinedbehaviors-macos:
-    name: UB Check - Arm64 MacOS
+  cpp-undefinedbehaviors-macos:
+    name: UB Check - Arm64 MacOS (C++)
     needs: correctness
     if: ${{ needs.correctness.outputs.any_changed == 'true' }}
     runs-on: macos-latest
@@ -106,8 +106,8 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
 
-  undefinedbehaviors-rv:
-    name: UB Check - RISC-V Ubuntu
+  cpp-undefinedbehaviors-rv:
+    name: UB Check - RISC-V Ubuntu (C++)
     needs: correctness
     if: ${{ needs.correctness.outputs.any_changed == 'true' }}
     runs-on: ubuntu-latest
@@ -146,8 +146,8 @@ jobs:
         # The environment variables are set in Launch Risc-V Docker step
         run: docker exec ubtest python3 scripts/ub-check.py
 
-  undefinedbehaviors-windows:
-    name: UB Check - x86_64 Windows
+  cpp-undefinedbehaviors-windows:
+    name: UB Check - x86_64 Windows (C++)
     needs: correctness
     if: ${{ needs.correctness.outputs.any_changed == 'true' }}
     runs-on: windows-2025
@@ -183,8 +183,8 @@ jobs:
           python scripts/ub-check.py
 
 
-  undefinedbehaviors-alpine:
-    name: UB Check - x86_64 Alpine
+  cpp-undefinedbehaviors-alpine:
+    name: UB Check - x86_64 Alpine (C++)
     needs: correctness
     if: ${{ needs.correctness.outputs.any_changed == 'true' }}
     runs-on: ubuntu-latest
@@ -212,3 +212,14 @@ jobs:
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
+
+  py-correctness:
+    name: OI-wiki Offline Test (Python)
+    runs-on: ubuntu-latest
+    outputs:
+      any_changed: ${{ steps.changed-files.outputs.any_changed }}
+      files_to_test: ${{ steps.GetFiles.outputs.files_to_test }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
