@@ -7,7 +7,6 @@ import os
 def get_files_to_test(filenames):
     mainfiles_to_test_cpp = set()
     mainfiles_to_test_py = set()
-    
     mainfiles_cpp, auxfiles_cpp, examples_cpp, skiptest_cpp = [], [], [], []
     mainfiles_py, auxfiles_py, examples_py, skiptest_py = [], [], [], []
 
@@ -15,7 +14,6 @@ def get_files_to_test(filenames):
         dirname, basename, extname = os.path.dirname(filename), os.path.splitext(os.path.basename(filename))[0], os.path.splitext(filename)[1]
         
         if extname.endswith('.cpp'):
-            # 处理 C++ 文件变更
             mainfile = os.path.normpath(os.path.join(dirname, basename.split('.')[0] + '.cpp'))
             if mainfile in mainfiles_to_test_cpp:
                 continue
@@ -44,7 +42,6 @@ def get_files_to_test(filenames):
             skiptest_cpp.append(temp_skiptest)
             
         elif extname.endswith('.py'):
-            # 处理 Python 文件变更
             mainfile = os.path.normpath(os.path.join(dirname, basename.split('.')[0] + '.py'))
             if mainfile in mainfiles_to_test_py:
                 continue
