@@ -43,7 +43,7 @@ jobs:
         run: python scripts/get_files_to_test.py
 
   cpp-correctness:
-    name: OI-wiki Offline Test (C++)
+    name: Offline C++ Test
     needs: file-list
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
         run: uv run python scripts/correctness_check.py
 
   cpp-undefinedbehaviors-ubuntu:
-    name: UB Check - x86_64 Ubuntu (C++)
+    name: C++ UB Check (x86_64 Ubuntu)
     needs: cpp-correctness
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         run: python3 scripts/ub-check.py
 
   cpp-undefinedbehaviors-macos:
-    name: UB Check - Arm64 MacOS (C++)
+    name: C++ UB Check (Arm64 macOS)
     needs: cpp-correctness
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: macos-latest
@@ -113,7 +113,7 @@ jobs:
         run: python3 scripts/ub-check.py
 
   cpp-undefinedbehaviors-rv:
-    name: UB Check - RISC-V Ubuntu (C++)
+    name: C++ UB Check (RISC-V Ubuntu)
     needs: cpp-correctness
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
         run: docker exec ubtest python3 scripts/ub-check.py
 
   cpp-undefinedbehaviors-windows:
-    name: UB Check - x86_64 Windows (C++)
+    name: C++ UB Check (x86_64 Windows)
     needs: cpp-correctness
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: windows-2025
@@ -190,7 +190,7 @@ jobs:
 
 
   cpp-undefinedbehaviors-alpine:
-    name: UB Check - x86_64 Alpine (C++)
+    name: C++ UB Check (x86_64 Alpine)
     needs: cpp-correctness
     if: needs.file-list.outputs.any_cpp == 'true'
     runs-on: ubuntu-latest
@@ -220,7 +220,7 @@ jobs:
         run: python3 scripts/ub-check.py
 
   py-correctness:
-    name: OI-wiki Offline Test (Python)
+    name: Offline Python Test
     needs: file-list
     if: needs.file-list.outputs.any_py == 'true'
     runs-on: ubuntu-latest
