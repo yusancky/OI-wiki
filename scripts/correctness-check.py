@@ -27,24 +27,20 @@ def check_correctness(test_file):
     if not os.path.exists(test_file):
         print(f"File {test_file} does not exist.\n::endgroup::")
         return ERROR, f'文件 {test_file} 不存在'
-    test_examples = code2examples(test_file)
+    test_examples = code2examples(test_file) # 这里还需要判断一下 testskip 情况，让我思考一下
     if test_examples == None:
         print(f"Example file(s) for {test_file} does not exist.\n::endgroup::")
         return ERROR, f'文件 {test_file} 的样例输入或样例输出不存在（如果不希望测试 {test_file}，请创建 {test_file.replace(".cpp", ".skip_test")}）'
 
-    # 这个指令及以后还没有修改
-    compile_command = f"g++ -std=c++17 {" ".join(auxfiles)} -o {mainfile.split(".")[0]}"
-    print(compile_command, end=' ')
+    compile_command = f"g++ -std=c++17 {test_file} -o {test_file.split(".")[0]}"
+    print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
-        print(f'\n::endgroup::')
-        print(f'::error file={mainfile},title=CE!::Compile Error! with error code {result.returncode}')
-        summary += f'## CE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **编译指令**：{compile_command}\n- **错误代码**：{result.returncode}\n\n'
-        return ERROR, summary
+        print(f'CE\n::endgroup::\n::error file={test_file},title=Compile Error::Compile Error with error code {result.returncode}')
+        return ERROR, f'文件 {test_file} 编译错误'
     else:
         print('OK')
-  
-    # 对不提供数据点的特殊处理
+    
     if len(examples) == 0:
         print(f'\n::endgroup::')
         print(f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.cpp', '.skip_test')}")
