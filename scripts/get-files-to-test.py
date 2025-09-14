@@ -21,7 +21,7 @@ def examples2code(example_file):
 
 
 if __name__ == "__main__":
-    changed_files = os.environ.get["all_changed_files"]
+    changed_files = os.environ.get("all_changed_files")
     if changed_files:
         changed_codes = []
         for changed_file in changed_files.split():
