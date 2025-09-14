@@ -23,22 +23,18 @@ ACCEPTED, ERROR = 1, 0
 
 def check_correctness(test_file):
     print(f'::group::Test for {test_file}...')
-    if not os.path.exists(test_file):
-        print('::endgroup::')
-        print(f'::error file={test_file},title=file {test_file} not found::') # error file 不存在是不是不太对……
-        summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
-        return ERROR, summary
-    for file in example:
-        if not os.path.exists(file):
-            print(f'::endgroup::')
-            print(f'::error file={file},title=file {file} not found::')
-            summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
-            return ERROR, summary
-        
-    # 编译
-    compile_command = f'g++ -std=c++17 {" ".join(auxfiles)} -o {mainfile.split(".")[0]}'
-    print(compile_command, end=' ')
 
+    if not os.path.exists(test_file):
+        print(f"File {test_file} does not exist.\n::endgroup::")
+        return ERROR, f'文件 {test_file} 不存在'
+    test_examples = code2examples(test_file)
+    if test_examples == None:
+        print(f"Example file(s) for {test_file} does not exist.\n::endgroup::")
+        return ERROR, f'文件 {test_file} 的样例输入或样例输出不存在（如果不希望测试 {test_file}，请创建 {test_file.replace(".cpp", ".skip_test")}）'
+
+    # 这个指令及以后还没有修改
+    compile_command = f"g++ -std=c++17 {" ".join(auxfiles)} -o {mainfile.split(".")[0]}"
+    print(compile_command, end=' ')
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
         print(f'\n::endgroup::')
