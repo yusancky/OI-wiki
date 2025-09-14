@@ -106,7 +106,5 @@ def get_files_to_test(filenames):
 
 
 if __name__ == "__main__":
-    with open("res.txt") as file_object:
-        lines = file_object.readlines()
-    changed_files = [name for line in lines for name in line.split()]
+    changed_files = open("res.txt").read().split()
     get_files_to_test(changed_files)
