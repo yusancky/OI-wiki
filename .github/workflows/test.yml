@@ -42,7 +42,7 @@ jobs:
   cpp-correctness:
     name: Offline C++ Test
     needs: file-list
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,8 +59,8 @@ jobs:
 
   cpp-undefinedbehaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
-    needs: cpp-correctness
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: [file-list, cpp-correctness]
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: ubuntu-latest
     container: ghcr.io/trickeye/ubuntu_gcc1x:clang
     outputs:
@@ -82,8 +82,8 @@ jobs:
 
   cpp-undefinedbehaviors-macos:
     name: C++ UB Check (Arm64 macOS)
-    needs: cpp-correctness
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: [file-list, cpp-correctness]
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: macos-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -108,8 +108,8 @@ jobs:
 
   cpp-undefinedbehaviors-rv:
     name: C++ UB Check (RISC-V Ubuntu)
-    needs: cpp-correctness
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: [file-list, cpp-correctness]
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -148,8 +148,8 @@ jobs:
 
   cpp-undefinedbehaviors-windows:
     name: C++ UB Check (x86_64 Windows)
-    needs: cpp-correctness
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: [file-list, cpp-correctness]
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: windows-2025
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -185,8 +185,8 @@ jobs:
 
   cpp-undefinedbehaviors-alpine:
     name: C++ UB Check (x86_64 Alpine)
-    needs: cpp-correctness
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: [file-list, cpp-correctness]
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'False'
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -216,7 +216,7 @@ jobs:
   py-correctness:
     name: Offline Python Test
     needs: file-list
-    if: needs.file-list.outputs.TEST_PY_FILES != 'None'
+    if: needs.file-list.outputs.TEST_PY_FILES != 'False'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
