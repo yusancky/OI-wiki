@@ -4,10 +4,10 @@
 import os
 import subprocess
 
-def code2examples(source_filename):
-    dirname = os.path.dirname(source_filename)
-    basename = os.path.splitext(os.path.basename(source_filename))[0]
-    extname = os.path.splitext(source_filename)[1]
+def code2examples(cpp_filename):
+    dirname = os.path.dirname(cpp_filename)
+    basename = os.path.splitext(os.path.basename(cpp_filename))[0]
+    extname = os.path.splitext(cpp_filename)[1]
     if not extname.endswith(('.cpp', '.py')):
         return None
     examples_dir = dirname.replace('code', 'examples')
@@ -15,6 +15,18 @@ def code2examples(source_filename):
     out_file = os.path.normpath(os.path.join(examples_dir, basename + '.out'))
     ans_file = os.path.normpath(os.path.join(examples_dir, basename + '.ans'))
     return in_file, out_file, ans_file
+
+import os
+
+def get_auxfiles(cpp_filename):
+    dirname = os.path.dirname(cpp_filename)
+    basename = os.path.splitext(os.path.basename(cpp_filename))[0]
+    auxfiles = []
+    for root, _, files in os.walk(dirname):
+        for file in files:
+            if (file.split(".")[0] == basename.split(".")[0] and file.endswith(".cpp")):
+                auxfiles.append(os.path.normpath(os.path.join(root, file)))
+    return auxfiles
 
 ACCEPTED, ERROR, SKIPPED = 1, 0, -1
 
