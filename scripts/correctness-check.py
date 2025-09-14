@@ -1,6 +1,5 @@
 # Check correctness of example C++ code.
-# input: related files to test (from get-files-to-test.py, read from $FILES_TO_TEST)
-# output: None. Print to GitHub Action step summary.
+# input: related files to test (read from $TEST_CPP_FILES)
 
 import os
 import subprocess
@@ -12,85 +11,61 @@ def code2examples(source_filename):
     if not extname.endswith(('.cpp', '.py')):
         return None
     examples_dir = dirname.replace('code', 'examples')
-    in_filename = os.path.normpath(os.path.join(examples_dir, basename + '.in'))
-    ans_filename = os.path.normpath(os.path.join(examples_dir, basename + '.ans'))
-    if os.path.exists(in_filename) and os.path.exists(ans_filename):
-        return (in_filename, ans_filename)
-    else:
-        return None
+    in_file = os.path.normpath(os.path.join(examples_dir, basename + '.in'))
+    out_file = os.path.normpath(os.path.join(examples_dir, basename + '.out'))
+    ans_file = os.path.normpath(os.path.join(examples_dir, basename + '.ans'))
+    return in_file, out_file, ans_file
 
-ACCEPTED, ERROR = 1, 0
+ACCEPTED, ERROR, SKIPPED = 1, 0, -1
 
 def check_correctness(test_file):
     print(f'::group::Test for {test_file}...')
 
     if not os.path.exists(test_file):
-        print(f"File {test_file} does not exist.\n::endgroup::")
-        return ERROR, f'文件 {test_file} 不存在'
-    test_examples = code2examples(test_file) # 这里还需要判断一下 testskip 情况，让我思考一下
-    if test_examples == None:
-        print(f"Example file(s) for {test_file} does not exist.\n::endgroup::")
-        return ERROR, f'文件 {test_file} 的样例输入或样例输出不存在（如果不希望测试 {test_file}，请创建 {test_file.replace(".cpp", ".skip_test")}）'
+        print(f"File {test_file} does not exist\n::endgroup::")
+        return ERROR, f'❌ 文件 {test_file} 不存在'
 
-    compile_command = f"g++ -std=c++17 {test_file} -o {test_file.split(".")[0]}"
+    executable = test_file.split(".")[0]
+    compile_command = f"g++ -std=c++17 {test_file} -o {executable}"
     print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
         print(f'CE\n::endgroup::\n::error file={test_file},title=Compile Error::Compile Error with error code {result.returncode}')
-        return ERROR, f'文件 {test_file} 编译错误'
-    else:
-        print('OK')
-    
-    if len(examples) == 0:
-        print(f'\n::endgroup::')
-        print(f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.cpp', '.skip_test')}")
-        summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- 编译指令：{compile_command}\n成功编译，但因数据不存在未能进一步测试。**如果不希望进行测试，请创建{mainfile.replace(".cpp", ".skip_test")}**\n\n'
-        return ACCEPTED, summary  
+        return ERROR, f'❌ 文件 {test_file} 编译错误'
+    print('OK')
 
-    # 逐个测试
-    executable = mainfile.split(".")[0]
-    check_command = (f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}' for e in examples)
-    for check, e in zip(check_command, examples):
-        print(f'{executable} < {e} > {e.replace(".in", ".out")}', end=' ')
-        with open(e, 'r') as fstdin:
-            with open(e.replace(".in", ".out"), 'w') as fstdout:
-                result = subprocess.run(executable, shell=True, stdin=fstdin, stdout=fstdout)
-        if result.returncode != 0:
-            print(f'\n::endgroup::')
-            print(f'::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}')
-            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
-            return ERROR, summary
-        else:
-            print('OK')
+    in_file, out_file, ans_file = code2examples(test_file)
+    if not (os.path.exists(in_file) and os.path.exists(ans_file)):
+        print(f"::warning file={test_file},title=Example file(s) does not exist::Example file(s) for {test_file} does not exist, so its output will not be checked\n::endgroup::")
+        return SKIPPED, f'⚠️ 文件 {test_file} 的样例输入 {in_file} 或样例输出 {ans_file} 不存在，不校验输出结果'
 
-        print(check, end=' ')
-        result = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL)
-        if result.returncode != 0:
-            print(f'\n::endgroup::')
-            print(f'::error file={e},title=WA!::Wrong Answer on: {e}')
-            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n\n期望得到：\n```\n{open(e.replace(".in", ".ans")).read()}\n```\n但得到输出：\n```\n{open(e.replace(".in", ".out")).read()}\n```\n\n'
-            return ERROR, summary
-        else:
-            print(f'Accepted!')
+    print(f'Runing {executable} with input {in_file}', end=' ')
+    result = subprocess.run(executable, shell=True, stdin=open(in_file, 'r'), stdout=open(out_file, 'w'))
+    if result.returncode != 0:
+        print(f'::error file={test_file},title=Runtime Error::Runtime Error with error code: {result.returncode}\n::endgroup::')
+        return ERROR, f'❌ 文件 {test_file} 运行时错误'
+    print('OK')
 
-    summary += f'## AC: {mainfile} ({len(examples)} tests)\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n\n'
-    print(f'::endgroup::')
-    return ACCEPTED, summary
+    check_command = f'diff -b -B {out_file} {ans_file}'
+    print(check_command, end=' ')
+    result = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL)
+    if result.returncode != 0:
+        print(f'::error file={test_file},title=Wrong Answer::The output is different to the answer {ans_file}')
+        return ERROR, f"❌ 文件 {test_file} 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace('\n', '\n    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace('\n', '\n    ')}\n    ```"
+    print('Accepted!\n::endgroup::')
+    return ACCEPTED, f'✅ 文件 {test_file} 通过测试'
 
 if __name__ == "__main__":
     test_files = os.environ.get("TEST_CPP_FILES").split("|")
-    cnt_ac, cnt_error = 0, 0
+    cnt_ac, cnt_skip, cnt_error = 0, 0
     summary = ""
     for test_file in test_files:
-        # correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
-        # cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
-        # cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
-        """
-        with open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w') as f:
-            f.write(f'# TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n\n')
-            f.write(summary)
-            print(f'::group::TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n::endgroup::')
-        """
-    if cnt_error > 0:
-        exit(1)
-
+        correctness, test_summary = check_correctness(test_file)
+        cnt_ac += 1 if correctness == ACCEPTED else 0
+        cnt_skip += 1 if correctness == SKIPPED else 0
+        cnt_error += 1 if correctness == ERROR else 0
+        summary += "- " + test_summary
+    general_summary = f"TOTAL {len(test_files)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR"
+    print(general_summary)
+    open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w').write(f'**{general_summary}**\n\n{summary}')
+    exit(cnt_error)
