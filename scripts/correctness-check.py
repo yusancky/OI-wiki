@@ -19,28 +19,15 @@ def code2examples(source_filename):
     else:
         return None
 
-ACCEPTED, ERROR, SKIPPED = 1, 0, -1
+ACCEPTED, ERROR = 1, 0
 
-def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
-    """
-    Check correctness of one instance of example code.
-    """
-
-    print(f'::group::Test for {mainfile}...')
-    # 是否跳过测试
-    if skiptest:
-        summary += f'## 跳过：{mainfile}\n测试因 {mainfile + ".skip_test"} 文件存在而跳过\n\n'
-        print(f'::group::{mainfile}: test skipped')
-        print(f'::endgroup::')
-        return SKIPPED, summary
-    
-    # 检测文件存在
-    for file in auxfile:
-        if not os.path.exists(file):
-            print(f'::endgroup::')
-            print(f'::error file={file},title=file {file} not found::')
-            summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
-            return ERROR, summary
+def check_correctness(test_file):
+    print(f'::group::Test for {test_file}...')
+    if not os.path.exists(test_file):
+        print('::endgroup::')
+        print(f'::error file={test_file},title=file {test_file} not found::') # error file 不存在是不是不太对……
+        summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
+        return ERROR, summary
     for file in example:
         if not os.path.exists(file):
             print(f'::endgroup::')
@@ -99,22 +86,19 @@ def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
     return ACCEPTED, summary
 
 if __name__ == "__main__":
-    test_cpp_files = os.environ.get("TEST_CPP_FILES").split("|")
-    """
-    哈哈我写到这里了
-    """
+    test_files = os.environ.get("TEST_CPP_FILES").split("|")
+    cnt_ac, cnt_error = 0, 0
     summary = ""
-    cnt_ac, cnt_error, cnt_skip = 0, 0, 0
-    for mainfile, auxfile, example, skiptest in zip(mainfiles, auxfiles, examples, skiptests):
-        correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
-        cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
-        cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
-        cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
-        
+    for test_file in test_files:
+        # correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
+        # cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
+        # cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
+        """
         with open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w') as f:
             f.write(f'# TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n\n')
             f.write(summary)
             print(f'::group::TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n::endgroup::')
-    if cnt_error:
+        """
+    if cnt_error > 0:
         exit(1)
 
