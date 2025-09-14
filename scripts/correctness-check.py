@@ -16,8 +16,6 @@ def code2examples(cpp_filename):
     ans_file = os.path.normpath(os.path.join(examples_dir, basename + '.ans'))
     return in_file, out_file, ans_file
 
-import os
-
 def get_auxfiles(cpp_filename):
     dirname = os.path.dirname(cpp_filename)
     basename = os.path.splitext(os.path.basename(cpp_filename))[0]
@@ -37,8 +35,9 @@ def check_correctness(test_file):
         print(f"File {test_file} does not exist\n::endgroup::")
         return ERROR, f'❌ 文件 {test_file} 不存在'
 
+    auxfiles = " ".join(get_auxfiles(test_file))
     executable = test_file.split(".")[0]
-    compile_command = f"g++ -std=c++17 {test_file} -o {executable}"
+    compile_command = f"g++ -std=c++17 {auxfiles} -o {executable}"
     print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
