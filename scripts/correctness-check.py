@@ -98,21 +98,23 @@ def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
     print(f'::endgroup::')
     return ACCEPTED, summary
 
-mainfiles, auxfiles, examples, skiptests = eval(os.environ.get("FILES_TO_TEST"))
-summary = ''
-
-cnt_ac, cnt_error, cnt_skip = 0, 0, 0
-for mainfile, auxfile, example, skiptest in zip(mainfiles, auxfiles, examples, skiptests):
-    correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
-    cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
-    cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
-    cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
-
-with open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w') as f:
-    f.write(f'# TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n\n')
-    f.write(summary)
-    print(f'::group::TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n::endgroup::')
-
-if cnt_error:
-    exit(1)
+if __name__ == "__main__":
+    test_cpp_files = os.environ.get("TEST_CPP_FILES").split("|")
+    """
+    哈哈我写到这里了
+    """
+    summary = ""
+    cnt_ac, cnt_error, cnt_skip = 0, 0, 0
+    for mainfile, auxfile, example, skiptest in zip(mainfiles, auxfiles, examples, skiptests):
+        correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
+        cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
+        cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
+        cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
+        
+        with open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w') as f:
+            f.write(f'# TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n\n')
+            f.write(summary)
+            print(f'::group::TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n::endgroup::')
+    if cnt_error:
+        exit(1)
 
