@@ -35,9 +35,12 @@ if __name__ == "__main__":
             changed_extnamed_codes = " ".join(
                 filter(lambda x: x.endswith(".cpp"), changed_codes)
             )
+            print("changed_extnamed_codes" + changed_extnamed_codes)
             if changed_extnamed_codes == "":
                 changed_extnamed_codes = "None"
+                print("changed_extnamed_codes is now None!")
             with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
+                print(f"TEST_{extname.upper()}_FILES={changed_extnamed_codes}")
                 f.write(f"TEST_{extname.upper()}_FILES={changed_extnamed_codes}")
     else:
         for extname in extnames:
@@ -48,8 +51,6 @@ if __name__ == "__main__":
                         all_extnamed_codes.append(os.path.join(root, file))
             all_extnamed_codes = " ".join(all_extnamed_codes)
             if all_extnamed_codes == "":
-                print("ccc")
                 all_extnamed_codes = "None"
             with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-                print(f"TEST_{extname.upper()}_FILES={all_extnamed_codes}")
                 f.write(f"TEST_{extname.upper()}_FILES={all_extnamed_codes}")
