@@ -5,12 +5,10 @@ import os
 import subprocess
 
 
-def code2examples(cpp_filename):
-    dirname = os.path.dirname(cpp_filename)
-    basename = os.path.splitext(os.path.basename(cpp_filename))[0]
-    extname = os.path.splitext(cpp_filename)[1]
-    if not extname.endswith((".cpp", ".py")):
-        return None
+def code2examples(code_filename):
+    dirname = os.path.dirname(code_filename)
+    basename = os.path.splitext(os.path.basename(code_filename))[0]
+    extname = os.path.splitext(code_filename)[1]
     examples_dir = dirname.replace("code", "examples")
     in_file = os.path.normpath(os.path.join(examples_dir, basename + ".in"))
     out_file = os.path.normpath(os.path.join(examples_dir, basename + ".out"))
