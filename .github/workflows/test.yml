@@ -14,9 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
-      files_to_test: ${{ steps.get-files.outputs.files_to_test }}
-      any_cpp: ${{ steps.get-files.outputs.any_cpp }}
-      any_py: ${{ steps.get-files.outputs.any_py }}
+      TEST_CPP_FILES: ${{ steps.get-files.outputs.TEST_CPP_FILES }}
+      TEST_PY_FILES: ${{ steps.get-files.outputs.TEST_PY_FILES }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,19 +32,18 @@ jobs:
       - uses: actions/setup-python@v5
         if: steps.changed-files.outputs.any_changed == 'true'
         with:
-          python-version: '3.10'
-      - name: Make the File list
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: echo "${{ steps.changed-files.outputs.all_changed_files }}" > res.txt
+          python-version: '3.13'
       - name: Get Files to Test
         if: steps.changed-files.outputs.any_changed == 'true'
         id: get-files
-        run: python scripts/get_files_to_test.py
+        run: python scripts/get-files-to-test.py
+        env:
+          all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
 
   cpp-correctness:
     name: Offline C++ Test
     needs: file-list
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
@@ -61,12 +59,12 @@ jobs:
       - name: Correctness Check
         env: 
           FILES_TO_TEST: ${{ steps.get-files.outputs.files_to_test }}
-        run: uv run python scripts/correctness_check.py
+        run: python scripts/correctness_check.py
 
   cpp-undefinedbehaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
     needs: cpp-correctness
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
     container: ghcr.io/trickeye/ubuntu_gcc1x:clang
     outputs:
@@ -89,7 +87,7 @@ jobs:
   cpp-undefinedbehaviors-macos:
     name: C++ UB Check (Arm64 macOS)
     needs: cpp-correctness
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: macos-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -115,7 +113,7 @@ jobs:
   cpp-undefinedbehaviors-rv:
     name: C++ UB Check (RISC-V Ubuntu)
     needs: cpp-correctness
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -155,7 +153,7 @@ jobs:
   cpp-undefinedbehaviors-windows:
     name: C++ UB Check (x86_64 Windows)
     needs: cpp-correctness
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: windows-2025
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -192,7 +190,7 @@ jobs:
   cpp-undefinedbehaviors-alpine:
     name: C++ UB Check (x86_64 Alpine)
     needs: cpp-correctness
-    if: needs.file-list.outputs.any_cpp == 'true'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -222,7 +220,7 @@ jobs:
   py-correctness:
     name: Offline Python Test
     needs: file-list
-    if: needs.file-list.outputs.any_py == 'true'
+    if: needs.file-list.outputs.TEST_PY_FILES != 'None'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
