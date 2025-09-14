@@ -6,7 +6,9 @@ void bubble_sort(int *a, int n) {
     for (int i = 1; i < n; ++i) {
       if (a[i] > a[i + 1]) {
         flag = true;
-        std::swap(a[i], a[i + 1]);
+        int x = a[i];
+        a[i] = a[i + 1];
+        a[i + 1] = x;
       }
     }
   }
