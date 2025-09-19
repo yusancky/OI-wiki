@@ -21,6 +21,8 @@ def examples2code(example_file):
 
 
 def output(name, value):
+    print(name)
+    print(value if value else "false")
     if value:
         with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
             f.write(f"{name}={value if value else 'false'}\n")
@@ -50,8 +52,3 @@ if __name__ == "__main__":
                     if file.endswith(extname):
                         all_extnamed_codes.append(os.path.join(root, file))
             output(f"TEST_{extname[1:].upper()}_FILES", all_extnamed_codes)
-
-
-with open(os.environ["GITHUB_OUTPUT"], "r") as f:
-    print(f.read())
-
