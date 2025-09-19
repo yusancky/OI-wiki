@@ -22,7 +22,7 @@ def examples2code(example_file):
 
 def output(name, value):
     with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
-        f.write(f"{name}={value if value else 'falsssse'}\n")
+        f.write(f"{name}={value if value else 'None'}\n")
 
 
 if __name__ == "__main__":
