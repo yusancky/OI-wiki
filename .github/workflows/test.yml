@@ -42,7 +42,7 @@ jobs:
   cpp-correctness:
     name: Offline C++ Test
     needs: file-list
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'false'
+    if: needs.file-list.outputs.TEST_CPP_FILES != 'falsssse'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
