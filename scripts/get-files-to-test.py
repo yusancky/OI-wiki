@@ -50,4 +50,4 @@ if __name__ == "__main__":
             if all_extnamed_codes == "":
                 all_extnamed_codes = "None"
             with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-                f.write(f"TEST_{extname.upper()}_FILES={all_extnamed_codes}")
+                f.write(f"TEST_{extname[1:].upper()}_FILES={all_extnamed_codes}")
