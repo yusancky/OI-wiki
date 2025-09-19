@@ -37,6 +37,7 @@ if __name__ == "__main__":
             )
             if changed_extnamed_codes == "":
                 changed_extnamed_codes = "None"
+            print(f"TEST_{extname[1:].upper()}_FILES={changed_extnamed_codes}")
             with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
                 f.write(f"TEST_{extname[1:].upper()}_FILES={changed_extnamed_codes}")
     else:
