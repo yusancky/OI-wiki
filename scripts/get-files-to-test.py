@@ -50,3 +50,8 @@ if __name__ == "__main__":
                     if file.endswith(extname):
                         all_extnamed_codes.append(os.path.join(root, file))
             output(f"TEST_{extname[1:].upper()}_FILES", all_extnamed_codes)
+
+
+with open(os.environ["GITHUB_OUTPUT"], "r") as f:
+    print(f.read())
+
