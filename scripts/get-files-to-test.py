@@ -21,13 +21,8 @@ def examples2code(example_file):
 
 
 def output(name, value):
-    print(name)
-    print(value if value else "false")
-    if value:
-        with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
-            f.write(f"{name}={value if value else 'falsssse'}\n")
-            print(f"{name}={value if value else 'falsssse'}\n")
-
+    with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
+        f.write(f"{name}={value if value else 'falsssse'}\n")
 
 
 if __name__ == "__main__":
