@@ -20,6 +20,12 @@ def examples2code(example_file):
     return code_files
 
 
+def output(name, value):
+    if value:
+        with open(os.environ.get("GITHUB_OUTPUT"), "a") as f:
+            f.write(f"{name}={value if value else 'false'}\n")
+
+
 if __name__ == "__main__":
     changed_files = os.environ.get("all_changed_files")
     if changed_files:
@@ -35,11 +41,7 @@ if __name__ == "__main__":
             changed_extnamed_codes = " ".join(
                 filter(lambda x: x.endswith(extname), changed_codes)
             )
-            if changed_extnamed_codes == "":
-                changed_extnamed_codes = "false"
-            print(f"TEST_{extname[1:].upper()}_FILES={changed_extnamed_codes}")
-            with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-                f.write(f"TEST_{extname[1:].upper()}_FILES={changed_extnamed_codes}")
+            output(f"TEST_{extname[1:].upper()}_FILES", changed_extnamed_codes)
     else:
         for extname in extnames:
             all_extnamed_codes = []
@@ -47,8 +49,4 @@ if __name__ == "__main__":
                 for file in files:
                     if file.endswith(extname):
                         all_extnamed_codes.append(os.path.join(root, file))
-            all_extnamed_codes = " ".join(all_extnamed_codes)
-            if all_extnamed_codes == "":
-                all_extnamed_codes = "None"
-            with open(os.environ.get("GITHUB_OUTPUT"), "w") as f:
-                f.write(f"TEST_{extname[1:].upper()}_FILES={all_extnamed_codes}")
+            output(f"TEST_{extname[1:].upper()}_FILES", all_extnamed_codes)
