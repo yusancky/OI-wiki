@@ -71,7 +71,7 @@ def check_correctness(test_file):
 
     check_command = f"diff -b -B {out_file} {ans_file}"
     print(check_command, end=" ")
-    result = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL)
+    result = subprocess.run(check_command, shell=True, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
         print(
             f"::error file={test_file},title=Wrong Answer::The output is different to the answer {ans_file}"
