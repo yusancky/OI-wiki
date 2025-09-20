@@ -31,11 +31,11 @@ jobs:
             docs/**/*.in
             docs/**/*.ans
       - uses: actions/setup-python@v5
-        if: github.event_name == 'workflow_dispatch' || steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         with:
           python-version: '3.13'
       - name: Get Files to Test
-        if: github.event_name == 'workflow_dispatch' || steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         id: get-files
         run: python scripts/get-files-to-test.py
         env:
@@ -56,7 +56,7 @@ jobs:
           sudo apt-get install -y g++
       - name: Correctness Check
         env: 
-          FILES_TO_TEST: ${{ steps.get-files.outputs.files_to_test }}
+          FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
         run: python scripts/correctness-check.py
 
   cpp-undefinedbehaviors-ubuntu:
