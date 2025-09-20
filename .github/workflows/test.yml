@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   file-list:
@@ -22,6 +23,7 @@ jobs:
       - name: Get changed code files
         id: changed-files
         uses: tj-actions/changed-files@v46
+        if: github.event_name != 'workflow_dispatch'
         with:
           files: |
             docs/**/*.cpp
@@ -29,11 +31,11 @@ jobs:
             docs/**/*.in
             docs/**/*.ans
       - uses: actions/setup-python@v5
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.changed-files.outputs.any_changed == 'true'
         with:
           python-version: '3.13'
       - name: Get Files to Test
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.changed-files.outputs.any_changed == 'true'
         id: get-files
         run: python scripts/get-files-to-test.py
         env:
