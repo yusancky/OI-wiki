@@ -1,7 +1,3 @@
-# Find related files to conduct correctness check and undefined behavior checks.
-# input: changed files (from tj-actions/changed-files)
-# output: related files to test (write to $GITHUB_OUTPUT)
-
 import os
 
 extnames = [".cpp", ".py"]
@@ -28,14 +24,12 @@ def output(name, value):
 if __name__ == "__main__":
     changed_files = os.environ.get("all_changed_files")
     if changed_files:
-        changed_codes = []
+        changed_codes = set()
         for changed_file in changed_files.split():
             if os.path.splitext(changed_file)[1] in ["in", "ans"]:
-                code_files = examples2code(changed_file)
-                for code_file in code_files:
-                    changed_codes.append(code_file)
+                changed_codes.update(examples2code(changed_file))
             else:
-                changed_codes.append(changed_file)
+                changed_codes.add(changed_file)
         for extname in extnames:
             changed_extnamed_codes = " ".join(
                 filter(lambda x: x.endswith(extname), changed_codes)
@@ -48,4 +42,4 @@ if __name__ == "__main__":
                 for file in files:
                     if file.endswith(extname):
                         all_extnamed_codes.append(os.path.join(root, file))
-            output(f"TEST_{extname[1:].upper()}_FILES", all_extnamed_codes)
+            output(f"TEST_{extname[1:].upper()}_FILES", " ".join(all_extnamed_codes))
