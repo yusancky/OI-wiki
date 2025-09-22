@@ -1,6 +1,3 @@
-# Check correctness of example C++ code.
-# input: related files to test (read from $TEST_CPP_FILES)
-
 import os
 import subprocess
 
