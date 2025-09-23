@@ -23,15 +23,12 @@ def get_auxfiles(cpp_filename):
     return auxfiles
 
 
-ACCEPTED, ERROR, SKIPPED = 1, 0, -1
-
-
 def check_correctness(test_file):
     print(f"::group::Test for {test_file}...")
 
     if not os.path.exists(test_file):
         print(f"File {test_file} does not exist\n::endgroup::")
-        return ERROR, f"❌ 文件 {test_file} 不存在"
+        return 0, f"❌ 文件 {test_file} 不存在"
 
     auxfiles = " ".join(get_auxfiles(test_file))
     executable = test_file.split(".")[0]
@@ -42,7 +39,7 @@ def check_correctness(test_file):
         print(
             f"CE\n::endgroup::\n::error file={test_file},title=Compile Error::Compile Error with error code {result.returncode}"
         )
-        return ERROR, f"❌ 文件 {test_file} 编译错误"
+        return 0, f"❌ 文件 {test_file} 编译错误"
     print("OK")
 
     in_file, out_file, ans_file = code2examples(test_file)
@@ -51,7 +48,7 @@ def check_correctness(test_file):
             f"::warning file={test_file},title=Example file(s) does not exist::Example file(s) for {test_file} does not exist, so its output will not be checked\n::endgroup::"
         )
         return (
-            SKIPPED,
+            -1,
             f"⚠️ 文件 {test_file} 的样例输入 {in_file} 或样例输出 {ans_file} 不存在，不校验输出结果",
         )
 
@@ -63,7 +60,7 @@ def check_correctness(test_file):
         print(
             f"::error file={test_file},title=Runtime Error::Runtime Error with error code: {result.returncode}\n::endgroup::"
         )
-        return ERROR, f"❌ 文件 {test_file} 运行时错误"
+        return 0, f"❌ 文件 {test_file} 运行时错误"
     print("OK")
 
     check_command = f"diff -b -B {out_file} {ans_file}"
@@ -74,26 +71,24 @@ def check_correctness(test_file):
             f"::error file={test_file},title=Wrong Answer::The output is different to the answer {ans_file}"
         )
         return (
-            ERROR,
+            0,
             f"❌ 文件 {test_file} 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
         )
     print("Accepted!\n::endgroup::")
-    return ACCEPTED, f"✅ 文件 {test_file} 通过测试"
+    return 1, f"✅ 文件 {test_file} 通过测试"
 
 
 if __name__ == "__main__":
     test_files = os.environ.get("TEST_CPP_FILES").split(" ")
-    cnt_ac, cnt_skip, cnt_error = 0, 0, 0
+    cnts = [0, 0, 0]
     summary = ""
     for test_file in test_files:
         correctness, test_summary = check_correctness(test_file)
-        cnt_ac += 1 if correctness == ACCEPTED else 0
-        cnt_skip += 1 if correctness == SKIPPED else 0
-        cnt_error += 1 if correctness == ERROR else 0
+        cnts[1 - correctness] += 1
         summary += "- " + test_summary
-    general_summary = f"TOTAL {len(test_files)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR"
+    general_summary = f"TOTAL {len(test_files)} TESTS, {cnts[0]} ACCEPTED, {cnts[1]} SKIPPED, {cnts[2]} ERROR"
     print(general_summary)
     open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(
         f"**{general_summary}**\n\n{summary}"
     )
-    exit(cnt_error)
+    exit(cnts[2])
