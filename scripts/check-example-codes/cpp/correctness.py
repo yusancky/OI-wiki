@@ -1,6 +1,6 @@
 import os
 import subprocess
-from scripts.check-example-codes.cpp.utils import *
+from utils import *
 
 
 def code2examples(code_filename):
