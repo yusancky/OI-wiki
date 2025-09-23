@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 import os
 import subprocess
-from dataclasses import dataclass
+from utils import *
 
 RED = "\033[0;31m"
 GREEN = "\033[0;32m"
@@ -61,19 +62,7 @@ class Skipped(Status):
     errcode: int = 0
     color: str = BLUE
 
-
-def get_auxfiles(cpp_filename):
-    dirname = os.path.dirname(cpp_filename)
-    basename = os.path.splitext(os.path.basename(cpp_filename))[0]
-    auxfiles = []
-    for root, _, files in os.walk(dirname):
-        for file in files:
-            if file.split(".")[0] == basename.split(".")[0] and file.endswith(".cpp"):
-                auxfiles.append(os.path.normpath(os.path.join(root, file)))
-    return auxfiles
-
-
-mainfiles, auxfiles, examples, skiptests = eval(os.environ.get("TEST_CPP_FILES"))
+test_files = os.environ.get("TEST_CPP_FILES")
 runs_on = os.environ.get("RUNS_ON")
 
 
