@@ -1,3 +1,6 @@
+import os
+
+
 def get_auxfiles(cpp_filename):
     dirname = os.path.dirname(cpp_filename)
     basename = os.path.splitext(os.path.basename(cpp_filename))[0]
