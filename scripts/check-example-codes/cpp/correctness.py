@@ -1,5 +1,6 @@
 import os
 import subprocess
+from utils import *
 
 
 def code2examples(code_filename):
@@ -10,17 +11,6 @@ def code2examples(code_filename):
     out_file = os.path.normpath(os.path.join(examples_dir, basename + ".out"))
     ans_file = os.path.normpath(os.path.join(examples_dir, basename + ".ans"))
     return in_file, out_file, ans_file
-
-
-def get_auxfiles(cpp_filename):
-    dirname = os.path.dirname(cpp_filename)
-    basename = os.path.splitext(os.path.basename(cpp_filename))[0]
-    auxfiles = []
-    for root, _, files in os.walk(dirname):
-        for file in files:
-            if file.split(".")[0] == basename.split(".")[0] and file.endswith(".cpp"):
-                auxfiles.append(os.path.normpath(os.path.join(root, file)))
-    return auxfiles
 
 
 def check_correctness(test_file):
