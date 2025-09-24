@@ -3,12 +3,16 @@ name: Check Example Codes
 on:
   push:
     paths:
+      - .github/workflows/check-example-codes.yml
+      - scripts/check-example-codes/**/*
       - docs/**/*.cpp
       - docs/**/*.py
       - docs/**/*.in
       - docs/**/*.ans
   pull_request:
     paths:
+      - .github/workflows/check-example-codes.yml
+      - scripts/check-example-codes/**/*
       - docs/**/*.cpp
       - docs/**/*.py
       - docs/**/*.in
@@ -37,11 +41,9 @@ jobs:
             docs/**/*.in
             docs/**/*.ans
       - uses: actions/setup-python@v5
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         with:
           python-version: '3.13'
       - name: Get Files to Test
-        if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
         id: get-files
         run: python scripts/check-example-codes/file-lists.py
         env:
