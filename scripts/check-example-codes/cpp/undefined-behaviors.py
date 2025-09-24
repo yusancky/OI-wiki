@@ -451,9 +451,9 @@ if __name__ == "__main__":
         for key in return_status:
             output_status[key] = [str(i) for i in return_status[key]]
         output[test_file] = output_status
-        cnt[1 if this_file_looks_odd else 0] += 1
+        cnts[1 if this_file_looks_odd else 0] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
-    if cnt[1]:
-        print(f"Found {cnt[1]} files with potential UB.")
-        exit(cnt[1])
+    if cnts[1]:
+        print(f"Found {cnts[1]} files with potential UB.")
+        exit(cnts[1])
