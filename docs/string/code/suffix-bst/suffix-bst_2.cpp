@@ -17,7 +17,7 @@ int q, n, na;
 string a;
 char t[N];
 
-// SuffixBST(SGT Ver)
+// SuffixBST(SGT Ver) test
 
 // 顺序加入，查询时将询问串翻转
 // 以i结束的前缀，对应节点的编号为i
