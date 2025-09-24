@@ -57,8 +57,10 @@ class WA(Status):
     color: str = RED
 
 
-def ub_check(mainfile, auxfiles):
+def ub_check(mainfile):
     print(incolor(BLUE, f"Test for {mainfile}..."))
+    
+    auxfiles = get_auxfiles(mainfile)
 
     CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
@@ -444,12 +446,12 @@ if __name__ == "__main__":
     cnts = [0, 0]
     output = {}
     """
-    for mainfile, auxfile in zip(mainfiles, auxfiles):
-        this_file_looks_odd, return_status = ub_check(mainfile, auxfile)
+    for test_file in test_files:
+        this_file_looks_odd, return_status = ub_check(test_file)
         output_status = {}
         for key in return_status:
             output_status[key] = [str(i) for i in return_status[key]]
-        output[mainfile] = output_status
+        output[test_file] = output_status
         cnt[1 if this_file_looks_odd else 0] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
