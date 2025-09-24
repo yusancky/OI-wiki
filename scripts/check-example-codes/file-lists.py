@@ -3,6 +3,16 @@ import os
 extnames = [".cpp", ".py"]
 
 
+import os
+
+def check_available(file):
+    base_name = os.path.basename(file)
+    file_dir = os.path.dirname(filename)
+    name_without_ext = os.path.splitext(base_name)[0]
+    skip_file_path = os.path.join(file_dir, f"{name_without_ext}.skip_test")
+    return not os.path.exists(skip_file_path)
+
+
 def examples2code(example_file):
     dirname = os.path.dirname(example_file)
     basename = os.path.splitext(os.path.basename(example_file))[0]
