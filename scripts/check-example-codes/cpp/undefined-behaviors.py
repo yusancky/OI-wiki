@@ -21,11 +21,38 @@ class Status:
         return f"{self.color}{self}{RESET}"
 
 
-COMPILEOK = Status(0, GREEN)
-CE = lambda code: Status(code, RED)
-AC = Status(0, GREEN)
-RE = lambda code: Status(code, RED)
-WA = lambda code: Status(code, RED)
+@dataclass(frozen=True)
+class COMPILEOK(Status):
+    errcode: int = 0
+    color: str = GREEN
+
+
+@dataclass(frozen=True)
+class CE(Status):
+    errcode: int
+    color: str = RED
+
+
+@dataclass(frozen=True)
+class AC(Status):
+    errcode: int = 0
+    color: str = GREEN
+
+
+@dataclass(frozen=True)
+class RE(Status):
+    errcode: int
+    color: str = RED
+
+
+@dataclass(frozen=True)
+class WA(Status):
+    errcode: int
+    color: str = RED
+
+
+def format_error(error_str):
+    return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
 
 
 def ub_check(test_file):
@@ -203,64 +230,28 @@ def ub_check(test_file):
     return_status = {}
     this_file_looks_odd = False
     for compile_command, compile_product in zip(compile_commands, compile_products):
-        printbuffer = ""  # Buffer the contents to print in the buffer
+        printbuffer = compile_command + " "
         fold_this_run = True
-        printbuffer += compile_command + " "
         result = subprocess.run(compile_command, shell=True, capture_output=True)
         if result.returncode != 0:
             this_file_looks_odd = True
             fold_this_run = False
             status_vector = [CE(result.returncode)]
-            # print(status_vector[0].colored())
             printbuffer += status_vector[0].colored() + "\n"
-            # print('  ---- Compile Stdout: ----')
             printbuffer += "  ---- Compile Stdout: ----\n"
-            # print('\n'.join(list(map(lambda x: '  ' + x, result.stdout.decode().split('\n')))))
-            printbuffer += (
-                "\n".join(
-                    list(map(lambda x: "  " + x, result.stdout.decode().split("\n")))
-                )
-                + "\n"
-            )
-            # print('  ---- Compile Stderr: ----')
+            printbuffer += format_error(result.stdout.decode())
             printbuffer += "  ---- Compile Stderr: ----\n"
-            # print('\n'.join(list(map(lambda x: '  ' + x, result.stderr.decode().split('\n')))))
-            printbuffer += (
-                "\n".join(
-                    list(map(lambda x: "  " + x, result.stderr.decode().split("\n")))
-                )
-                + "\n"
-            )
+            printbuffer += format_error(result.stderr.decode())
         else:
             status_vector = [COMPILEOK()]
-            # print(status_vector[0].colored())
             printbuffer += status_vector[0].colored() + "\n"
             if result.stdout or result.stderr:
-                # print('  ---- Compile Stdout: ----')
                 printbuffer += "  ---- Compile Stdout: ----\n"
-                # print('\n'.join(list(map(lambda x: '  ' + x, result.stdout.decode().split('\n')))))
-                printbuffer += (
-                    "\n".join(
-                        list(
-                            map(lambda x: "  " + x, result.stdout.decode().split("\n"))
-                        )
-                    )
-                    + "\n"
-                )
-                # print('  ---- Compile Stderr: ----')
+                printbuffer += format_error(result.stdout.decode())
                 printbuffer += "  ---- Compile Stderr: ----\n"
-                # print('\n'.join(list(map(lambda x: '  ' + x, result.stderr.decode().split('\n')))))
-                printbuffer += (
-                    "\n".join(
-                        list(
-                            map(lambda x: "  " + x, result.stderr.decode().split("\n"))
-                        )
-                    )
-                    + "\n"
-                )
+                printbuffer += format_error(result.stderr.decode())
 
             in_file, out_file, ans_file = get_examples(test_file)
-            # print(f'{compile_product} < {in_file} > {out_file}', end=' ')
             printbuffer += f"{compile_product} < {in_file} > {out_file}" + " "
             result = subprocess.run(
                 f"{os.path.join(os.path.curdir, compile_product)}",
@@ -274,40 +265,13 @@ def ub_check(test_file):
                 this_file_looks_odd = True
                 fold_this_run = False
                 status_vector.append(RE(result.returncode))
-                # print(status_vector[-1].colored())
                 printbuffer += status_vector[-1].colored() + "\n"
-                # print('  ---- Execution Stdout: ----')
                 printbuffer += "  ---- Execution Stdout: ----\n"
-                # print('\n'.join(list(map(lambda x: '  ' + x, result.stdout.decode().split('\n')))))
-                printbuffer += (
-                    "\n".join(
-                        list(
-                            map(
-                                lambda x: "  " + x,
-                                result.stdout.decode().split("\n"),
-                            )
-                        )
-                    )
-                    + "\n"
-                )
-                # print('  ---- Execution Stderr: ----')
+                printbuffer += format_error(result.stdout.decode())
                 printbuffer += "  ---- Execution Stderr: ----\n"
-                # print('\n'.join(list(map(lambda x: '  ' + x, result.stderr.decode().split('\n')))))
-                printbuffer += (
-                    "\n".join(
-                        list(
-                            map(
-                                lambda x: "  " + x,
-                                result.stderr.decode().split("\n"),
-                            )
-                        )
-                    )
-                    + "\n"
-                )
+                printbuffer += format_error(result.stderr.decode())
             else:
-                # print(incolor(GREEN, 'OK'))
                 printbuffer += incolor(GREEN, "OK") + "\n"
-                # print(f'diff -b -B {out_file} {ans_file}', end=' ')
                 printbuffer += f"diff -b -B {out_file} {ans_file} "
                 result = subprocess.run(
                     f"diff -b -B {out_file} {ans_file}",
@@ -320,41 +284,14 @@ def ub_check(test_file):
                     status_vector.append(WA(result.returncode))
                 else:
                     status_vector.append(AC())
-                # print(status_vector[-1].colored())
                 printbuffer += status_vector[-1].colored() + "\n"
                 if result.returncode != 0:
-                    # print('  ---- We expect: ----')
                     printbuffer += "  ---- We expect: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, open(ans_file).read().split('\n')))))
-                    printbuffer += (
-                        "\n".join(
-                            list(
-                                map(
-                                    lambda x: "  " + x,
-                                    open(ans_file).read().split("\n"),
-                                )
-                            )
-                        )
-                        + "\n"
-                    )
-                    # print('  ---- We get: ----')
+                    printbuffer += format_error(open(ans_file).read())
                     printbuffer += "  ---- We get: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, open(out_file).read().split('\n')))))
-                    printbuffer += (
-                        "\n".join(
-                            list(
-                                map(
-                                    lambda x: "  " + x,
-                                    open(out_file).read().split("\n"),
-                                )
-                            )
-                        )
-                        + "\n"
-                    )
-        # print(f'{compile_product.split(os.path.pathsep)[-1]}: ', end='')
+                    printbuffer += format_error(open(out_file).read())
         printbuffer += f"{compile_product.split(os.path.pathsep)[-1]}: "
         for status in status_vector:
-            # print(status.colored(), end='; ')
             printbuffer += status.colored() + "; "
 
         if fold_this_run:
