@@ -22,7 +22,7 @@ def check_correctness(test_file):
         return 1, f"❌ 文件 {test_file} 编译错误"
     print("OK")
 
-    in_file, out_file, ans_file = code2examples(test_file)
+    in_file, out_file, ans_file = get_examples(test_file)
     if not (os.path.exists(in_file) and os.path.exists(ans_file)):
         print(
             f"::warning file={test_file},title=Example file(s) does not exist::Example file(s) for {test_file} does not exist, so its output will not be checked\n::endgroup::"
