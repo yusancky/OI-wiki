@@ -2,6 +2,8 @@ name: Check Example Codes
 
 on:
   push:
+    branches:
+      - master
     paths:
       - .github/workflows/check-example-codes.yml
       - scripts/check-example-codes/**/*
@@ -10,6 +12,8 @@ on:
       - docs/**/*.in
       - docs/**/*.ans
   pull_request:
+    branches:
+      - master
     paths:
       - .github/workflows/check-example-codes.yml
       - scripts/check-example-codes/**/*
