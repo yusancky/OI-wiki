@@ -57,10 +57,10 @@ class WA(Status):
     color: str = RED
 
 
-def ub_check(mainfile):
-    print(incolor(BLUE, f"Test for {mainfile}..."))
+def ub_check(test_file):
+    print(incolor(BLUE, f"Test for {test_file}..."))
     
-    auxfiles = get_auxfiles(mainfile)
+    auxfiles = get_auxfiles(test_file)
 
     CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
@@ -70,7 +70,7 @@ def ub_check(mainfile):
         optimizations,
         auxfiles,
         sanitizers,
-        mainfile,
+        test_file,
         omit_ms_style=False,
     ):
         assert compilers is not None and compilers != []
@@ -81,7 +81,7 @@ def ub_check(mainfile):
         def arrgen():
             if not omit_ms_style:
                 return [
-                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} -o {mainfile.split(".")[0]}{c_name}{s_name}{o_name}{san_name}'
+                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} -o {test_file.split(".")[0]}{c_name}{s_name}{o_name}{san_name}'
                     for compiler, c_name in compilers
                     for standard, s_name in standards
                     for optimization, o_name in optimizations
@@ -89,7 +89,7 @@ def ub_check(mainfile):
                 ]
             else:
                 return [
-                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} /Fe:{os.path.normpath(mainfile.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
+                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} /Fe:{os.path.normpath(test_file.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
                     for compiler, c_name in compilers
                     for standard, s_name in standards
                     for optimization, o_name in optimizations
@@ -98,7 +98,7 @@ def ub_check(mainfile):
 
         def productgen():
             return [
-                f'{os.path.normpath(mainfile.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
+                f'{os.path.normpath(test_file.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
                 for _, c_name in compilers
                 for _, s_name in standards
                 for _, o_name in optimizations
@@ -124,7 +124,7 @@ def ub_check(mainfile):
                 optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
                 sanitizers=[("", ".NA")],
                 auxfiles=auxfiles,
-                mainfile=mainfile,
+                test_file=test_file,
             ),
             gen(
                 compilers=[
@@ -139,7 +139,7 @@ def ub_check(mainfile):
                 optimizations=[("", ".NA")],
                 sanitizers=[("-fsanitize=undefined,address", ".UBSAN-ASAN")],
                 auxfiles=auxfiles,
-                mainfile=mainfile,
+                test_file=test_file,
             ),
         ),
         "x86_64 Alpine": gen(
@@ -155,7 +155,7 @@ def ub_check(mainfile):
             optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
             sanitizers=[("", ".NA")],
             auxfiles=auxfiles,
-            mainfile=mainfile,
+            test_file=test_file,
         ),
         "x86_64 Windows": concat(
             gen(
@@ -171,7 +171,7 @@ def ub_check(mainfile):
                 optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
                 sanitizers=[("", ".NA")],
                 auxfiles=auxfiles,
-                mainfile=mainfile,
+                test_file=test_file,
             ),
             gen(
                 compilers=[
@@ -188,7 +188,7 @@ def ub_check(mainfile):
                 optimizations=[("/Od", ".O0"), ("/O2", ".O2")],
                 sanitizers=[("", ".NA")],
                 auxfiles=auxfiles,
-                mainfile=mainfile,
+                test_file=test_file,
                 omit_ms_style=True,
             ),
         ),
@@ -205,7 +205,7 @@ def ub_check(mainfile):
             optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
             sanitizers=[("", ".NA")],
             auxfiles=auxfiles,
-            mainfile=mainfile,
+            test_file=test_file,
         ),
         "arm64 MacOS": gen(
             compilers=[
@@ -220,7 +220,7 @@ def ub_check(mainfile):
             optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
             sanitizers=[("", ".NA")],
             auxfiles=auxfiles,
-            mainfile=mainfile,
+            test_file=test_file,
         ),
     }
 
@@ -305,7 +305,7 @@ def ub_check(mainfile):
                     + "\n"
                 )
 
-            in_file, out_file, ans_file = get_examples(mainfile)
+            in_file, out_file, ans_file = get_examples(test_file)
             # print(f'{compile_product} < {in_file} > {out_file}', end=' ')
             printbuffer += (
                 f'{compile_product} < {in_file} > {out_file}' + " "
@@ -426,7 +426,7 @@ def ub_check(mainfile):
             print("\n")
         return_status[compile_product] = status_vector
 
-    print(incolor(BLUE, f"Result for {mainfile}: "))
+    print(incolor(BLUE, f"Result for {test_file}: "))
     for key in return_status:
         print(f"-  {key}: ", end="")
         for status in return_status[key]:
@@ -434,7 +434,7 @@ def ub_check(mainfile):
         print()
     if this_file_looks_odd:
         print(
-            f"::error file={mainfile},title=Potential UB::Potential UB. Please take a look."
+            f"::error file={test_file},title=Potential UB::Potential UB. Please take a look."
         )
     print()
     return this_file_looks_odd, return_status
@@ -445,7 +445,6 @@ if __name__ == "__main__":
     runs_on = os.environ.get("RUNS_ON")
     cnts = [0, 0]
     output = {}
-    """
     for test_file in test_files:
         this_file_looks_odd, return_status = ub_check(test_file)
         output_status = {}
@@ -455,7 +454,6 @@ if __name__ == "__main__":
         cnt[1 if this_file_looks_odd else 0] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
-    """
     if cnt[1]:
         print(f"Found {cnt[1]} files with potential UB.")
         exit(cnt[1])
