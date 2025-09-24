@@ -3,14 +3,7 @@ import os
 import subprocess
 from utils import *
 
-RED = "\033[0;31m"
-GREEN = "\033[0;32m"
-YELLOW = "\033[0;33m"
-BLUE = "\033[0;34m"
-PURPLE = "\033[0;35m"
-CYAN = "\033[0;36m"
-WHITE = "\033[0;37m"
-RESET = "\033[0m"
+RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
 
 incolor = lambda color, text: f"{color}{text}{RESET}"
 
@@ -19,42 +12,16 @@ incolor = lambda color, text: f"{color}{text}{RESET}"
 class Status:
     errcode: int
     color: str
-
     def __str__(self):
         return f"{self.__class__.__name__}({self.errcode})"
-
     def colored(self):
         return f"{self.color}{self}{RESET}"
 
-
-@dataclass(frozen=True)
-class CompileOK(Status):
-    errcode: int = 0
-    color: str = GREEN
-
-
-@dataclass(frozen=True)
-class CE(Status):
-    errcode: int
-    color: str = RED
-
-
-@dataclass(frozen=True)
-class AC(Status):
-    errcode: int = 0
-    color: str = GREEN
-
-
-@dataclass(frozen=True)
-class RE(Status):
-    errcode: int
-    color: str = RED
-
-
-@dataclass(frozen=True)
-class WA(Status):
-    errcode: int
-    color: str = RED
+COMPILEOK = Status(0, GREEN)
+CE = lambda code: Status(code, RED)
+AC = Status(0, GREEN)
+RE = lambda code: Status(code, RED)
+WA = lambda code: Status(code, RED)
 
 
 def ub_check(test_file):
@@ -278,7 +245,7 @@ def ub_check(test_file):
             )
 
         else:
-            status_vector = [CompileOK()]
+            status_vector = [COMPILEOK()]
             # print(status_vector[0].colored())
             printbuffer += status_vector[0].colored() + "\n"
             if result.stdout or result.stderr:
