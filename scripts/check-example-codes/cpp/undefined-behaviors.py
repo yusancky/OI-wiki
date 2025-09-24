@@ -47,22 +47,14 @@ def ub_check(test_file):
         assert sanitizers is not None and sanitizers != []
 
         def arrgen():
-            if not omit_ms_style:
-                return [
-                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} -o {test_file.split(".")[0]}{c_name}{s_name}{o_name}{san_name}'
-                    for compiler, c_name in compilers
-                    for standard, s_name in standards
-                    for optimization, o_name in optimizations
-                    for sanitizer, san_name in sanitizers
-                ]
-            else:
-                return [
-                    f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} /Fe:{os.path.normpath(test_file.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
-                    for compiler, c_name in compilers
-                    for standard, s_name in standards
-                    for optimization, o_name in optimizations
-                    for sanitizer, san_name in sanitizers
-                ]
+            flag = "-o " if not omit_ms_style else "/Fe:"
+            return [
+                f'{compiler} {standard} {optimization} {sanitizer} {" ".join(auxfiles)} {flag}{os.path.normpath(test_file.split(".")[0])}{c_name}{s_name}{o_name}{san_name}'
+                for compiler, c_name in compilers
+                for standard, s_name in standards
+                for optimization, o_name in optimizations
+                for sanitizer, san_name in sanitizers
+            ]
 
         def productgen():
             return [
@@ -192,32 +184,27 @@ def ub_check(test_file):
         ),
     }
 
-    compile_commands_dict = {
+    compile_commands = {
         "x86_64 Ubuntu": config_map["x86_64 Ubuntu"][0],
         "x86_64 Alpine": config_map["x86_64 Alpine"][0],
         "x86_64 Windows": config_map["x86_64 Windows"][0],
         "riscv64 Ubuntu": config_map["riscv64 Ubuntu"][0],
         "arm64 MacOS": config_map["arm64 MacOS"][0],
-    }
+    }[runs_on]
 
-    compile_products_dict = {
+    compile_products = {
         "x86_64 Ubuntu": config_map["x86_64 Ubuntu"][1],
         "x86_64 Alpine": config_map["x86_64 Alpine"][1],
         "x86_64 Windows": config_map["x86_64 Windows"][1],
         "riscv64 Ubuntu": config_map["riscv64 Ubuntu"][1],
         "arm64 MacOS": config_map["arm64 MacOS"][1],
-    }
-
-    compile_commands = compile_commands_dict[runs_on]
-    compile_products = compile_products_dict[runs_on]
+    }[runs_on]
 
     return_status = {}
     this_file_looks_odd = False
     for compile_command, compile_product in zip(compile_commands, compile_products):
         printbuffer = ""  # Buffer the contents to print in the buffer
         fold_this_run = True
-        # print("::group::" + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
-        # print(compile_command, end=' ')
         printbuffer += compile_command + " "
         result = subprocess.run(compile_command, shell=True, capture_output=True)
         if result.returncode != 0:
@@ -244,7 +231,6 @@ def ub_check(test_file):
                 )
                 + "\n"
             )
-
         else:
             status_vector = [COMPILEOK()]
             # print(status_vector[0].colored())
@@ -318,7 +304,6 @@ def ub_check(test_file):
                     )
                     + "\n"
                 )
-
             else:
                 # print(incolor(GREEN, 'OK'))
                 printbuffer += incolor(GREEN, "OK") + "\n"
