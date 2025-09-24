@@ -29,7 +29,7 @@ def check_correctness(test_file):
         )
         return (
             1,
-            f"⚠️ 文件 {test_file} 的样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果。请上传对应样例，或将没有样例的代码直接嵌入 Markdown 文件的代码块中。",
+            f"⚠️ 文件 {test_file} 的样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件。",
         )
 
     print(f"Runing {executable} with input {in_file}", end=" ")
