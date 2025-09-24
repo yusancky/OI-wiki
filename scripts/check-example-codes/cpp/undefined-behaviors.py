@@ -57,27 +57,8 @@ class WA(Status):
     color: str = RED
 
 
-@dataclass(frozen=True)
-class Skipped(Status):
-    errcode: int = 0
-    color: str = BLUE
-
-
-def ub_check(mainfile, auxfiles, examples, skiptest):
-    """
-    Check for undefined behavior.
-    """
-
+def ub_check(mainfile, auxfiles, examples):
     print(incolor(BLUE, f"Test for {mainfile}..."))
-
-    if skiptest:
-        print(
-            incolor(
-                BLUE,
-                f"Test for {mainfile} skipped because file {mainfile + '.skip_test'} exists\n",
-            )
-        )
-        return False, {mainfile: [Skipped()]}
 
     CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
@@ -463,11 +444,11 @@ if __name__ == "__main__":
     runs_on = os.environ.get("RUNS_ON")
     cnts = [0, 0]
     output = {}
-    for mainfile, auxfile, example, skiptest in zip(
-        mainfiles, auxfiles, examples, skiptests
+    for mainfile, auxfile, example in zip(
+        mainfiles, auxfiles, examples
     ):
         this_file_looks_odd, return_status = ub_check(
-            mainfile, auxfile, example, skiptest
+            mainfile, auxfile, example
         )
         output_status = {}
         for key in return_status:
