@@ -3,14 +3,11 @@ import os
 extnames = [".cpp", ".py"]
 
 
-import os
-
 def check_available(file):
-    base_name = os.path.basename(file)
-    file_dir = os.path.dirname(filename)
-    name_without_ext = os.path.splitext(base_name)[0]
-    skip_file_path = os.path.join(file_dir, f"{name_without_ext}.skip_test")
-    return not os.path.exists(skip_file_path)
+    dirname = os.path.dirname(filename)
+    basename = os.path.splitext(os.path.basename(code_filename))[0]
+    skip_file = os.path.normpath(os.path.join(dirname, basename + ".skip_test"))
+    return not os.path.exists(skip_file)
 
 
 def examples2code(example_file):
@@ -19,10 +16,9 @@ def examples2code(example_file):
     code_dir = dirname.replace("examples", "code")
     code_files = []
     for extname in extnames:
-        if os.path.exists(os.path.join(code_dir, basename + extname)):
-            code_files.append(
-                os.path.normpath(os.path.join(code_dir, basename + extname))
-            )
+        code_file = os.path.normpath(os.path.join(code_dir, basename + extname))
+        if os.path.exists(code_file) and check_available(code_file):
+            code_files.append(code_file)
     return code_files
 
 
@@ -49,8 +45,8 @@ if __name__ == "__main__":
     else:
         for extname in extnames:
             all_extnamed_codes = []
-            for root, dirs, files in os.walk("docs"):
+            for root, _, files in os.walk("docs"):
                 for file in files:
-                    if file.endswith(extname):
+                    if file.endswith(extname) and check_available(file):
                         all_extnamed_codes.append(os.path.join(root, file))
             output(f"TEST_{extname[1:].upper()}_FILES", " ".join(all_extnamed_codes))
