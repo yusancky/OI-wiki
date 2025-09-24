@@ -435,7 +435,7 @@ def ub_check(test_file):
 
 
 if __name__ == "__main__":
-    test_files = os.environ.get("TEST_CPP_FILES").split(" ")
+    test_files = os.environ.get("TEST_CPP_FILES", "").split(" ")
     runs_on = os.environ.get("RUNS_ON")
     cnts = [0, 0]
     output = {}
