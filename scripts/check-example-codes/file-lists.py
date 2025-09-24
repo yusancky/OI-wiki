@@ -37,23 +37,14 @@ def output(name, value):
 
 if __name__ == "__main__":
     changed_files = os.environ.get("all_changed_files")
-    if changed_files:
-        changed_codes = set()
-        for changed_file in changed_files.split():
-            if os.path.splitext(changed_file)[1] in ["in", "ans"]:
-                changed_codes.update(examples2code(changed_file))
-            else:
-                changed_codes.add(changed_file)
-        for extname in extnames:
-            changed_extnamed_codes = " ".join(
-                filter(lambda x: x.endswith(extname), changed_codes)
-            )
-            output(f"TEST_{extname[1:].upper()}_FILES", changed_extnamed_codes)
-    else:
-        for extname in extnames:
-            all_extnamed_codes = []
-            for root, _, files in os.walk("docs"):
-                for file in files:
-                    if file.endswith(extname) and check_availability(os.path.join(root, file)):
-                        all_extnamed_codes.append(check_availability(os.path.join(root, file)))
-            output(f"TEST_{extname[1:].upper()}_FILES", " ".join(all_extnamed_codes))
+    changed_codes = set()
+    for changed_file in changed_files.split():
+        if os.path.splitext(changed_file)[1] in extnames:
+            changed_codes.add(changed_file)
+        else:
+            changed_codes.update(examples2code(changed_file))
+    for extname in extnames:
+        changed_extnamed_codes = " ".join(
+            filter(lambda x: x.endswith(extname), changed_codes)
+        )
+        output(f"TEST_{extname[1:].upper()}_FILES", changed_extnamed_codes)
