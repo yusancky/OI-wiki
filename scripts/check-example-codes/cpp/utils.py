@@ -11,6 +11,7 @@ def get_auxfiles(cpp_filename):
                 auxfiles.append(os.path.normpath(os.path.join(root, file)))
     return auxfiles
 
+
 def get_examples(code_filename):
     dirname = os.path.dirname(code_filename)
     basename = os.path.splitext(os.path.basename(code_filename))[0]
