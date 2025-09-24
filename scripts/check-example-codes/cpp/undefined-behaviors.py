@@ -22,7 +22,7 @@ class Status:
 
 
 @dataclass(frozen=True)
-class COMPILEOK(Status):
+class AC(Status):
     errcode: int = 0
     color: str = GREEN
 
@@ -31,12 +31,6 @@ class COMPILEOK(Status):
 class CE(Status):
     errcode: int
     color: str = RED
-
-
-@dataclass(frozen=True)
-class AC(Status):
-    errcode: int = 0
-    color: str = GREEN
 
 
 @dataclass(frozen=True)
@@ -243,7 +237,7 @@ def ub_check(test_file):
             printbuffer += "  ---- Compile Stderr: ----\n"
             printbuffer += format_error(result.stderr.decode())
         else:
-            status_vector = [COMPILEOK()]
+            status_vector = [AC()]
             printbuffer += status_vector[0].colored() + "\n"
             if result.stdout or result.stderr:
                 printbuffer += "  ---- Compile Stdout: ----\n"
