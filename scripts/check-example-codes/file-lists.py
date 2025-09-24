@@ -23,7 +23,8 @@ def output(name, value):
 
 if __name__ == "__main__":
     changed_files = os.environ.get("all_changed_files")
-    if changed_files:
+    other_changed_files = os.environ.get("other_changed_files")
+    if changed_files and "check-example-codes" not in other_changed_files:
         changed_codes = set()
         for changed_file in changed_files.split():
             if os.path.splitext(changed_file)[1] in ["in", "ans"]:
