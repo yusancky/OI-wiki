@@ -15,7 +15,7 @@ def check_availability(file):
     if os.path.exists(skip_file):
         return False
     else:
-        return os.path.normpath(os.path.join(dirname, basename + extname)
+        return os.path.normpath(os.path.join(dirname, basename + extname))
 
 
 def examples2code(example_file):
