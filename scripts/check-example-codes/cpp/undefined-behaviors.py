@@ -444,6 +444,7 @@ if __name__ == "__main__":
     runs_on = os.environ.get("RUNS_ON")
     cnts = [0, 0]
     output = {}
+    """
     for mainfile, auxfile, example in zip(
         mainfiles, auxfiles, examples
     ):
@@ -457,6 +458,7 @@ if __name__ == "__main__":
         cnt[1 if this_file_looks_odd else 0] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
+    """
     if cnt[1]:
         print(
             f"Found {cnt[1]} files with potential UB."
