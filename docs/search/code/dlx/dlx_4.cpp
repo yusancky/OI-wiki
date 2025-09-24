@@ -6,7 +6,7 @@ int dfn[3000], tx[2], nxt[2], num[50][50], vis[50];
 std::string ans[50];
 constexpr int f[2] = {-1, 1};
 constexpr int table[12][5][2] = {
-    // directions of shapes
+    // directions of shapes test
     {{0, 0}, {1, 0}, {0, 1}},                   // A
     {{0, 0}, {0, 1}, {0, 2}, {0, 3}},           // B
     {{0, 0}, {1, 0}, {0, 1}, {0, 2}},           // C
