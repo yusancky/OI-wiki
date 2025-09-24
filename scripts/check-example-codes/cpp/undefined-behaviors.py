@@ -59,7 +59,7 @@ class WA(Status):
 
 def ub_check(test_file):
     print(incolor(BLUE, f"Test for {test_file}..."))
-    
+
     auxfiles = get_auxfiles(test_file)
 
     CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
@@ -307,9 +307,7 @@ def ub_check(test_file):
 
             in_file, out_file, ans_file = get_examples(test_file)
             # print(f'{compile_product} < {in_file} > {out_file}', end=' ')
-            printbuffer += (
-                f'{compile_product} < {in_file} > {out_file}' + " "
-            )
+            printbuffer += f"{compile_product} < {in_file} > {out_file}" + " "
             result = subprocess.run(
                 f"{os.path.join(os.path.curdir, compile_product)}",
                 capture_output=True,
@@ -357,9 +355,9 @@ def ub_check(test_file):
                 # print(incolor(GREEN, 'OK'))
                 printbuffer += incolor(GREEN, "OK") + "\n"
                 # print(f'diff -b -B {out_file} {ans_file}', end=' ')
-                printbuffer += f'diff -b -B {out_file} {ans_file} '
+                printbuffer += f"diff -b -B {out_file} {ans_file} "
                 result = subprocess.run(
-                    f'diff -b -B {out_file} {ans_file}',
+                    f"diff -b -B {out_file} {ans_file}",
                     capture_output=True,
                     shell=True,
                 )
@@ -380,9 +378,7 @@ def ub_check(test_file):
                             list(
                                 map(
                                     lambda x: "  " + x,
-                                    open(ans_file)
-                                    .read()
-                                    .split("\n"),
+                                    open(ans_file).read().split("\n"),
                                 )
                             )
                         )
@@ -396,9 +392,7 @@ def ub_check(test_file):
                             list(
                                 map(
                                     lambda x: "  " + x,
-                                    open(out_file)
-                                    .read()
-                                    .split("\n"),
+                                    open(out_file).read().split("\n"),
                                 )
                             )
                         )
