@@ -3,8 +3,9 @@ import os
 import subprocess
 from utils import *
 
-RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
+CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
+RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
 incolor = lambda color, text: f"{color}{text}{RESET}"
 
 
@@ -12,10 +13,13 @@ incolor = lambda color, text: f"{color}{text}{RESET}"
 class Status:
     errcode: int
     color: str
+
     def __str__(self):
         return f"{self.__class__.__name__}({self.errcode})"
+
     def colored(self):
         return f"{self.color}{self}{RESET}"
+
 
 COMPILEOK = Status(0, GREEN)
 CE = lambda code: Status(code, RED)
@@ -26,10 +30,7 @@ WA = lambda code: Status(code, RED)
 
 def ub_check(test_file):
     print(incolor(BLUE, f"Test for {test_file}..."))
-
     auxfiles = get_auxfiles(test_file)
-
-    CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
     def gen(
         compilers,
