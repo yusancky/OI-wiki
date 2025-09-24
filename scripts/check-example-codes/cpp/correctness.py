@@ -59,7 +59,7 @@ def check_correctness(test_file):
 
 
 if __name__ == "__main__":
-    test_files = os.environ.get("TEST_CPP_FILES").split(" ")
+    test_files = os.environ.get("TEST_CPP_FILES", "").split(" ")
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
