@@ -4,6 +4,8 @@ extnames = [".cpp", ".py"]
 
 
 def check_available(file):
+    if ".aux" in file:
+        return False
     dirname = os.path.dirname(filename)
     basename = os.path.splitext(os.path.basename(code_filename))[0]
     skip_file = os.path.normpath(os.path.join(dirname, basename + ".skip_test"))
