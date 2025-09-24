@@ -66,7 +66,9 @@ if __name__ == "__main__":
         correctness, test_summary = check_correctness(test_file)
         cnts[correctness] += 1
         summary += "- " + test_summary
-    general_summary = f"TOTAL {len(test_files)} TESTS, {cnts[0]} ACCEPTED, {cnts[1]} ERROR/WARNING"
+    general_summary = (
+        f"TOTAL {len(test_files)} TESTS, {cnts[0]} ACCEPTED, {cnts[1]} ERROR/WARNING"
+    )
     print(general_summary)
     open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(
         f"**{general_summary}**\n\n{summary}"
