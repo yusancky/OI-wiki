@@ -71,4 +71,4 @@ if __name__ == "__main__":
     open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(
         f"**{general_summary}**\n\n{summary}"
     )
-    exit(cnts[2])
+    exit(cnts[1])
