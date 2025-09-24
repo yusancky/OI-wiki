@@ -52,6 +52,7 @@ jobs:
         run: python scripts/check-example-codes/file-lists.py
         env:
           all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+          other_changed_files: ${{ steps.changed-files.outputs.other_changed_files }}
 
   cpp-correctness:
     name: Offline C++ Test
