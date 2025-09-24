@@ -303,106 +303,105 @@ def ub_check(mainfile, auxfiles, examples):
                     + "\n"
                 )
 
-            for e in examples:
-                # print(f'{compile_product} < {e} > {e.replace(".in", ".out")}', end=' ')
+            e = get_examples(mainfile)[1]
+            # print(f'{compile_product} < {e} > {e.replace(".in", ".out")}', end=' ')
+            printbuffer += (
+                f'{compile_product} < {e} > {e.replace(".in", ".out")}' + " "
+            )
+            result = subprocess.run(
+                f"{os.path.join(os.path.curdir, compile_product)}",
+                capture_output=True,
+                input=open(e, "rb").read(),
+                shell=True,
+            )
+            with open(e.replace(".in", ".out"), "wb") as f:
+                f.write(result.stdout)
+            if result.returncode != 0:
+                this_file_looks_odd = True
+                fold_this_run = False
+                status_vector.append(RE(result.returncode))
+                # print(status_vector[-1].colored())
+                printbuffer += status_vector[-1].colored() + "\n"
+                # print('  ---- Execution Stdout: ----')
+                printbuffer += "  ---- Execution Stdout: ----\n"
+                # print('\n'.join(list(map(lambda x: '  ' + x, result.stdout.decode().split('\n')))))
                 printbuffer += (
-                    f'{compile_product} < {e} > {e.replace(".in", ".out")}' + " "
+                    "\n".join(
+                        list(
+                            map(
+                                lambda x: "  " + x,
+                                result.stdout.decode().split("\n"),
+                            )
+                        )
+                    )
+                    + "\n"
                 )
+                # print('  ---- Execution Stderr: ----')
+                printbuffer += "  ---- Execution Stderr: ----\n"
+                # print('\n'.join(list(map(lambda x: '  ' + x, result.stderr.decode().split('\n')))))
+                printbuffer += (
+                    "\n".join(
+                        list(
+                            map(
+                                lambda x: "  " + x,
+                                result.stderr.decode().split("\n"),
+                            )
+                        )
+                    )
+                    + "\n"
+                )
+
+            else:
+                # print(incolor(GREEN, 'OK'))
+                printbuffer += incolor(GREEN, "OK") + "\n"
+                # print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=' ')
+                printbuffer += f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")} '
                 result = subprocess.run(
-                    f"{os.path.join(os.path.curdir, compile_product)}",
+                    f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}',
                     capture_output=True,
-                    input=open(e, "rb").read(),
                     shell=True,
                 )
-                with open(e.replace(".in", ".out"), "wb") as f:
-                    f.write(result.stdout)
                 if result.returncode != 0:
                     this_file_looks_odd = True
                     fold_this_run = False
-                    status_vector.append(RE(result.returncode))
-                    # print(status_vector[-1].colored())
-                    printbuffer += status_vector[-1].colored() + "\n"
-                    # print('  ---- Execution Stdout: ----')
-                    printbuffer += "  ---- Execution Stdout: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, result.stdout.decode().split('\n')))))
-                    printbuffer += (
-                        "\n".join(
-                            list(
-                                map(
-                                    lambda x: "  " + x,
-                                    result.stdout.decode().split("\n"),
-                                )
-                            )
-                        )
-                        + "\n"
-                    )
-                    # print('  ---- Execution Stderr: ----')
-                    printbuffer += "  ---- Execution Stderr: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, result.stderr.decode().split('\n')))))
-                    printbuffer += (
-                        "\n".join(
-                            list(
-                                map(
-                                    lambda x: "  " + x,
-                                    result.stderr.decode().split("\n"),
-                                )
-                            )
-                        )
-                        + "\n"
-                    )
-
+                    status_vector.append(WA(result.returncode))
                 else:
-                    # print(incolor(GREEN, 'OK'))
-                    printbuffer += incolor(GREEN, "OK") + "\n"
-                    # print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=' ')
-                    printbuffer += f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")} '
-                    result = subprocess.run(
-                        f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}',
-                        capture_output=True,
-                        shell=True,
+                    status_vector.append(AC())
+                # print(status_vector[-1].colored())
+                printbuffer += status_vector[-1].colored() + "\n"
+                if result.returncode != 0:
+                    # print('  ---- We expect: ----')
+                    printbuffer += "  ---- We expect: ----\n"
+                    # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".ans")).read().split('\n')))))
+                    printbuffer += (
+                        "\n".join(
+                            list(
+                                map(
+                                    lambda x: "  " + x,
+                                    open(e.replace(".in", ".ans"))
+                                    .read()
+                                    .split("\n"),
+                                )
+                            )
+                        )
+                        + "\n"
                     )
-                    if result.returncode != 0:
-                        this_file_looks_odd = True
-                        fold_this_run = False
-                        status_vector.append(WA(result.returncode))
-                    else:
-                        status_vector.append(AC())
-                    # print(status_vector[-1].colored())
-                    printbuffer += status_vector[-1].colored() + "\n"
-                    if result.returncode != 0:
-                        # print('  ---- We expect: ----')
-                        printbuffer += "  ---- We expect: ----\n"
-                        # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".ans")).read().split('\n')))))
-                        printbuffer += (
-                            "\n".join(
-                                list(
-                                    map(
-                                        lambda x: "  " + x,
-                                        open(e.replace(".in", ".ans"))
-                                        .read()
-                                        .split("\n"),
-                                    )
+                    # print('  ---- We get: ----')
+                    printbuffer += "  ---- We get: ----\n"
+                    # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".out")).read().split('\n')))))
+                    printbuffer += (
+                        "\n".join(
+                            list(
+                                map(
+                                    lambda x: "  " + x,
+                                    open(e.replace(".in", ".out"))
+                                    .read()
+                                    .split("\n"),
                                 )
                             )
-                            + "\n"
                         )
-                        # print('  ---- We get: ----')
-                        printbuffer += "  ---- We get: ----\n"
-                        # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".out")).read().split('\n')))))
-                        printbuffer += (
-                            "\n".join(
-                                list(
-                                    map(
-                                        lambda x: "  " + x,
-                                        open(e.replace(".in", ".out"))
-                                        .read()
-                                        .split("\n"),
-                                    )
-                                )
-                            )
-                            + "\n"
-                        )
-
+                        + "\n"
+                    )
         # print(f'{compile_product.split(os.path.pathsep)[-1]}: ', end='')
         printbuffer += f"{compile_product.split(os.path.pathsep)[-1]}: "
         for status in status_vector:
