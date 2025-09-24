@@ -3,7 +3,7 @@ import os
 extnames = [".cpp", ".py"]
 
 
-def check_available(file):
+def check_availability(file):
     if ".aux" in file:
         return False
     dirname = os.path.dirname(filename)
@@ -19,7 +19,7 @@ def examples2code(example_file):
     code_files = []
     for extname in extnames:
         code_file = os.path.normpath(os.path.join(code_dir, basename + extname))
-        if os.path.exists(code_file) and check_available(code_file):
+        if os.path.exists(code_file) and check_availability(code_file):
             code_files.append(code_file)
     return code_files
 
@@ -49,6 +49,6 @@ if __name__ == "__main__":
             all_extnamed_codes = []
             for root, _, files in os.walk("docs"):
                 for file in files:
-                    if file.endswith(extname) and check_available(file):
+                    if file.endswith(extname) and check_availability(file):
                         all_extnamed_codes.append(os.path.join(root, file))
             output(f"TEST_{extname[1:].upper()}_FILES", " ".join(all_extnamed_codes))
