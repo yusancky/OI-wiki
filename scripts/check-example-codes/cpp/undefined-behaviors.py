@@ -57,7 +57,7 @@ class WA(Status):
     color: str = RED
 
 
-def ub_check(mainfile, auxfiles, examples):
+def ub_check(mainfile, auxfiles):
     print(incolor(BLUE, f"Test for {mainfile}..."))
 
     CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
@@ -303,18 +303,18 @@ def ub_check(mainfile, auxfiles, examples):
                     + "\n"
                 )
 
-            e = get_examples(mainfile)[1]
-            # print(f'{compile_product} < {e} > {e.replace(".in", ".out")}', end=' ')
+            in_file, out_file, ans_file = get_examples(mainfile)
+            # print(f'{compile_product} < {in_file} > {out_file}', end=' ')
             printbuffer += (
-                f'{compile_product} < {e} > {e.replace(".in", ".out")}' + " "
+                f'{compile_product} < {in_file} > {out_file}' + " "
             )
             result = subprocess.run(
                 f"{os.path.join(os.path.curdir, compile_product)}",
                 capture_output=True,
-                input=open(e, "rb").read(),
+                input=open(in_file, "rb").read(),
                 shell=True,
             )
-            with open(e.replace(".in", ".out"), "wb") as f:
+            with open(out_file, "wb") as f:
                 f.write(result.stdout)
             if result.returncode != 0:
                 this_file_looks_odd = True
@@ -354,10 +354,10 @@ def ub_check(mainfile, auxfiles, examples):
             else:
                 # print(incolor(GREEN, 'OK'))
                 printbuffer += incolor(GREEN, "OK") + "\n"
-                # print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=' ')
-                printbuffer += f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")} '
+                # print(f'diff -b -B {out_file} {ans_file}', end=' ')
+                printbuffer += f'diff -b -B {out_file} {ans_file} '
                 result = subprocess.run(
-                    f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}',
+                    f'diff -b -B {out_file} {ans_file}',
                     capture_output=True,
                     shell=True,
                 )
@@ -372,13 +372,13 @@ def ub_check(mainfile, auxfiles, examples):
                 if result.returncode != 0:
                     # print('  ---- We expect: ----')
                     printbuffer += "  ---- We expect: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".ans")).read().split('\n')))))
+                    # print('\n'.join(list(map(lambda x: '  ' + x, open(ans_file).read().split('\n')))))
                     printbuffer += (
                         "\n".join(
                             list(
                                 map(
                                     lambda x: "  " + x,
-                                    open(e.replace(".in", ".ans"))
+                                    open(ans_file)
                                     .read()
                                     .split("\n"),
                                 )
@@ -388,13 +388,13 @@ def ub_check(mainfile, auxfiles, examples):
                     )
                     # print('  ---- We get: ----')
                     printbuffer += "  ---- We get: ----\n"
-                    # print('\n'.join(list(map(lambda x: '  ' + x, open(e.replace(".in", ".out")).read().split('\n')))))
+                    # print('\n'.join(list(map(lambda x: '  ' + x, open(out_file).read().split('\n')))))
                     printbuffer += (
                         "\n".join(
                             list(
                                 map(
                                     lambda x: "  " + x,
-                                    open(e.replace(".in", ".out"))
+                                    open(out_file)
                                     .read()
                                     .split("\n"),
                                 )
@@ -444,22 +444,16 @@ if __name__ == "__main__":
     cnts = [0, 0]
     output = {}
     """
-    for mainfile, auxfile, example in zip(
-        mainfiles, auxfiles, examples
-    ):
-        this_file_looks_odd, return_status = ub_check(
-            mainfile, auxfile, example
-        )
+    for mainfile, auxfile in zip(mainfiles, auxfiles):
+        this_file_looks_odd, return_status = ub_check(mainfile, auxfile)
         output_status = {}
         for key in return_status:
-            output_status[key] = [str(_) for _ in return_status[key]]
+            output_status[key] = [str(i) for i in return_status[key]]
         output[mainfile] = output_status
         cnt[1 if this_file_looks_odd else 0] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
     """
     if cnt[1]:
-        print(
-            f"Found {cnt[1]} files with potential UB."
-        )
+        print(f"Found {cnt[1]} files with potential UB.")
         exit(cnt[1])
