@@ -71,7 +71,7 @@ jobs:
       - name: Correctness Check
         env: 
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
-        run: python scripts/check-example-codes/cpp/correctness.py -language cpp
+        run: python scripts/check-example-codes/correctness.py -language cpp
 
   cpp-undefined-behaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
@@ -93,7 +93,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Ubuntu
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/undefined-behaviors.py
 
   cpp-undefined-behaviors-macos:
     name: C++ UB Check (Arm64 macOS)
@@ -118,7 +118,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: arm64 MacOS
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/undefined-behaviors.py
 
   cpp-undefined-behaviors-rv:
     name: C++ UB Check (RISC-V Ubuntu)
@@ -157,7 +157,7 @@ jobs:
           echo "::endgroup::"
       - name: Undefined Behaviors Check
         # The environment variables are set in Launch Risc-V Docker step
-        run: docker exec ubtest python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: docker exec ubtest python3 scripts/check-example-codes/undefined-behaviors.py
 
   cpp-undefined-behaviors-windows:
     name: C++ UB Check (x86_64 Windows)
@@ -192,7 +192,7 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: |
           chcp 65001
-          python scripts/check-example-codes/cpp/undefined-behaviors.py
+          python scripts/check-example-codes/undefined-behaviors.py
 
 
   cpp-undefined-behaviors-alpine:
@@ -222,7 +222,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/undefined-behaviors.py
 
   py-correctness:
     name: Offline Python Test
