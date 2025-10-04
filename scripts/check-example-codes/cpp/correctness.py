@@ -3,13 +3,7 @@ import subprocess
 from utils import *
 
 
-def check_correctness(test_file):
-    print(f"::group::Test for {test_file}...")
-
-    if not os.path.exists(test_file):
-        print(f"File {test_file} does not exist\n::endgroup::")
-        return 1, f"❌ 文件 {test_file} 不存在"
-
+def run_test_cpp(test_file):
     auxfiles = " ".join(get_auxfiles(test_file))
     executable = test_file.split(".")[0]
     compile_command = f"g++ -std=c++17 {auxfiles} -o {executable}"
@@ -43,9 +37,12 @@ def check_correctness(test_file):
         return 1, f"❌ 文件 {test_file} 运行时错误"
     print("OK")
 
-    check_command = f"diff -b -B {out_file} {ans_file}"
-    print(check_command, end=" ")
-    result = subprocess.run(check_command, shell=True, stdout=subprocess.DEVNULL)
+
+def check_answer(test_file):
+    in_file, out_file, ans_file = get_examples(test_file)
+    command = f"diff -b -B {out_file} {ans_file}"
+    print(command, end=" ")
+    result = subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
         print(
             f"::error file={test_file},title=Wrong Answer::The output is different to the answer {ans_file}"
@@ -58,11 +55,22 @@ def check_correctness(test_file):
     return 0, f"✅ 文件 {test_file} 通过测试"
 
 
+def check_correctness(test_file):
+    if not os.path.exists(test_file):
+        print(f"File {test_file} does not exist\n::endgroup::")
+        return 1, f"❌ 文件 {test_file} 不存在"
+    correctness, test_summary = run_test_cpp(test_file)
+    if correctness != 0:
+        return correctness, test_summary
+    return check_answer(test_file)
+
+
 if __name__ == "__main__":
     test_files = os.environ.get("TEST_CPP_FILES", "").split()
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
+        print(f"::group::Test for {test_file}...")
         correctness, test_summary = check_correctness(test_file)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
