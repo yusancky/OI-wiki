@@ -36,6 +36,7 @@ def run_test_cpp(test_file):
         )
         return 1, f"❌ 文件 {test_file} 运行时错误"
     print("OK")
+    return 0, f"✅ 文件 {test_file} 编译、运行成功"
 
 
 def check_answer(test_file):
