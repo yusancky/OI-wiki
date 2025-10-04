@@ -3,7 +3,6 @@ import os
 import subprocess
 from utils import *
 
-
 def run_test_cpp(test_file):
     auxfiles = " ".join(get_auxfiles(test_file))
     executable = test_file.split(".")[0]
@@ -41,6 +40,20 @@ def run_test_cpp(test_file):
         print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
 
+def run_test_py(test_file):
+    try:
+        result = subprocess.run([sys.executable, test_file], input=open(in_file).read(),capture_output=True,text=True,timeout=30)
+        open(out_file, "w+").write(result.stdout)
+        if result.returncode != 0:
+            print(
+                f"RE\n::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+            )
+            return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
+        print("OK")
+        return 0, f"✅ 运行成功"
+    except subprocess.TimeoutExpired:
+        print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        return 1, f"❌ 运行时间超出 30 秒限制"
 
 def check_answer(test_file):
     in_file, out_file, ans_file = get_examples(test_file)
