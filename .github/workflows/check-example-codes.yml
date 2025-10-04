@@ -71,7 +71,7 @@ jobs:
       - name: Correctness Check
         env: 
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
-        run: python scripts/check-example-codes/cpp/correctness.py
+        run: python scripts/check-example-codes/cpp/correctness.py -language cpp
 
   cpp-undefined-behaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
