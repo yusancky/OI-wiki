@@ -4,7 +4,7 @@ from utils import *
 
 
 def run_test_cpp(test_file):
-    auxfiles = get_auxfiles(test_file)
+    auxfiles = " ".join(get_auxfiles(test_file))
     executable = test_file.split(".")[0]
     compile_command = f"g++ -std=c++17 {auxfiles} -o {executable}"
     print(compile_command, end=" ")
