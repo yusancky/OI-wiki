@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 from utils import *
@@ -56,23 +57,26 @@ def check_answer(test_file):
     return 0, f"✅ 文件 {test_file} 通过测试"
 
 
-def check_correctness(test_file):
+def check_correctness(test_file, language):
     if not os.path.exists(test_file):
         print(f"File {test_file} does not exist\n::endgroup::")
         return 1, f"❌ 文件 {test_file} 不存在"
-    correctness, test_summary = run_test_cpp(test_file)
+    correctness, test_summary = globals()[f"run_test_{language}"](test_file)
     if correctness != 0:
         return correctness, test_summary
     return check_answer(test_file)
 
 
 if __name__ == "__main__":
-    test_files = os.environ.get("TEST_CPP_FILES", "").split()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-language", type=str, required=True, choices=["cpp", "py"])
+    language = parser.parse_args().language
+    test_files = os.environ.get(f"TEST_{language.upper()}_FILES", "").split()
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
         print(f"::group::Test for {test_file}...")
-        correctness, test_summary = check_correctness(test_file)
+        correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
     general_summary = (
