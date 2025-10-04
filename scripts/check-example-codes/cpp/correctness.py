@@ -32,13 +32,13 @@ def run_test_cpp(test_file):
         )
         if result.returncode != 0:
             print(
-                f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+                f"RE\n::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
             )
             return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
         print("OK")
         return 0, f"✅ 编译、运行成功"
     except subprocess.TimeoutExpired:
-        print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
 
 
