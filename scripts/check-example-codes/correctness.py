@@ -1,7 +1,9 @@
 import argparse
 import os
 import subprocess
+import sys
 from utils import *
+
 
 def run_test_cpp(test_file):
     auxfiles = " ".join(get_auxfiles(test_file))
@@ -10,7 +12,9 @@ def run_test_cpp(test_file):
     print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
-        print(f"CE\n::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::")
+        print(
+            f"CE\n::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
+        )
         return 1, f"❌ 编译错误（错误码；{result.returncode}）"
     print("OK")
 
@@ -27,7 +31,11 @@ def run_test_cpp(test_file):
     print(f"运行 {executable}（样例输入：{in_file}）", end=" ")
     try:
         result = subprocess.run(
-            executable, shell=True, stdin=open(in_file, "r"), stdout=open(out_file, "w"), timeout = 30
+            executable,
+            shell=True,
+            stdin=open(in_file, "r"),
+            stdout=open(out_file, "w"),
+            timeout=30,
         )
         if result.returncode != 0:
             print(
@@ -40,9 +48,16 @@ def run_test_cpp(test_file):
         print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
 
+
 def run_test_py(test_file):
     try:
-        result = subprocess.run([sys.executable, test_file], input=open(in_file).read(),capture_output=True,text=True,timeout=30)
+        result = subprocess.run(
+            [sys.executable, test_file],
+            input=open(in_file).read(),
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
         open(out_file, "w+").write(result.stdout)
         if result.returncode != 0:
             print(
@@ -54,6 +69,7 @@ def run_test_py(test_file):
     except subprocess.TimeoutExpired:
         print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
+
 
 def check_answer(test_file):
     in_file, out_file, ans_file = get_examples(test_file)
@@ -94,7 +110,11 @@ if __name__ == "__main__":
         correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
-    general_summary = (f"已完成 {len(test_files)} 个测试，其中通过 {cnts[0]} 个，错误/警告/运行超时 {cnts[1]} 个")
+    general_summary = (
+        f"已完成 {len(test_files)} 个测试，其中通过 {cnts[0]} 个，错误/警告/运行超时 {cnts[1]} 个"
+    )
     print(general_summary)
-    open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(f"**{general_summary}**\n\n{summary}")
+    open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(
+        f"**{general_summary}**\n\n{summary}"
+    )
     exit(cnts[1])
