@@ -101,7 +101,8 @@ def check_answer(test_file):
             1,
             f"❌ 编译、运行成功，但输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
         )
-    print(incolor(GREEN, "Accepted!\n::endgroup::"))
+    print(incolor(GREEN, "AC"))
+    print("::endgroup::")
     return 0, f"✅ 编译、运行成功，且输出正确"
 
 
