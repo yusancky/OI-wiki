@@ -20,3 +20,13 @@ def get_examples(code_file):
     out_file = os.path.normpath(os.path.join(examples_dir, basename + ".out"))
     ans_file = os.path.normpath(os.path.join(examples_dir, basename + ".ans"))
     return in_file, out_file, ans_file
+
+
+RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
+STATUS_COLOR = {
+    "AC": GREEN,
+    "CE": RED,
+    "RE": RED,
+    "WA": RED,
+}
+incolor = lambda color, text: f"{color}{text}{RESET}"
