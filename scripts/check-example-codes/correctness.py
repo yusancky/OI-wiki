@@ -50,6 +50,7 @@ def run_test_cpp(test_file):
 
 
 def run_test_py(test_file):
+    in_file, out_file, ans_file = get_examples(test_file)
     try:
         result = subprocess.run(
             [sys.executable, test_file],

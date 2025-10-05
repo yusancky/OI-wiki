@@ -4,24 +4,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - .github/workflows/check-example-codes.yml
-      - scripts/check-example-codes/**/*
-      - docs/**/*.cpp
-      - docs/**/*.py
-      - docs/**/*.in
-      - docs/**/*.ans
   pull_request:
     branches:
       - master
-    paths:
-      - .github/workflows/check-example-codes.yml
-      - scripts/check-example-codes/**/*
-      - docs/**/*.cpp
-      - docs/**/*.py
-      - docs/**/*.in
-      - docs/**/*.ans
-  workflow_dispatch:
 
 jobs:
   file-list:
@@ -37,7 +22,6 @@ jobs:
       - name: Get changed code files
         id: changed-files
         uses: tj-actions/changed-files@v46
-        if: github.event_name != 'workflow_dispatch'
         with:
           files: |
             docs/**/*.cpp
