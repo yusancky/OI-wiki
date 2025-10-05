@@ -28,7 +28,7 @@ def run_test_cpp(test_file):
             f"⚠️ 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
         )
 
-    print(f"运行 {executable}（样例输入：{in_file}）", end=" ")
+    print(f"运行 {executable}", end=" ")
     try:
         result = subprocess.run(
             executable,
@@ -51,6 +51,7 @@ def run_test_cpp(test_file):
 
 def run_test_py(test_file):
     in_file, out_file, ans_file = get_examples(test_file)
+    print(f"运行 {test_file}", end=" ")
     try:
         result = subprocess.run(
             [sys.executable, test_file],
