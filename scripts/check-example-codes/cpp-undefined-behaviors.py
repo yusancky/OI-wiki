@@ -6,18 +6,18 @@ from utils import *
 CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
 RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
-incolor = lambda color, text: f"{color}{text}{RESET}"
-
-# 状态字符串和颜色映射
 STATUS_COLOR = {
     "AC": GREEN,
     "CE": RED,
     "RE": RED,
     "WA": RED,
 }
+incolor = lambda color, text: f"{color}{text}{RESET}"
+
 
 def format_error(error_str):
     return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
+
 
 def ub_check(test_file):
     print(incolor(BLUE, f"Test for {test_file}..."))
@@ -249,7 +249,9 @@ def ub_check(test_file):
                     status_vector.append("WA")
                 else:
                     status_vector.append("AC")
-                printbuffer += incolor(STATUS_COLOR[status_vector[-1]], status_vector[-1]) + "\n"
+                printbuffer += (
+                    incolor(STATUS_COLOR[status_vector[-1]], status_vector[-1]) + "\n"
+                )
                 if result.returncode != 0:
                     printbuffer += "  ---- We expect: ----\n"
                     printbuffer += format_error(open(ans_file).read())
@@ -287,6 +289,7 @@ def ub_check(test_file):
         )
     print()
     return this_file_looks_odd, return_status
+
 
 if __name__ == "__main__":
     test_files = os.environ.get("TEST_CPP_FILES", "").split(" ")
