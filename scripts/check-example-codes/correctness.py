@@ -89,14 +89,6 @@ def run_test_py(test_file):
 
 def check_answer(test_file):
     in_file, out_file, ans_file = get_examples(test_file)
-    if not (os.path.exists(in_file) and os.path.exists(ans_file)):
-        print(
-            f"::warning file={test_file},title=样例不存在::样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件\n::endgroup::"
-        )
-        return (
-            1,
-            f"⚠️ 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
-        )
     command = f"diff -b -B {out_file} {ans_file}"
     print(command, end=" ")
     result = subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
