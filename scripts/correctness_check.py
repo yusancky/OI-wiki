@@ -1,105 +1,137 @@
-# Check correctness of example code.
-# input: related files to test (from get_files_to_test.py, read from $FILES_TO_TEST)
-# output: None. Print to GitHub Action step summary.
-
+import argparse
 import os
 import subprocess
+import sys
+from utils import *
 
-ACCEPTED = 1
-ERROR = 0
-SKIPPED = -1
 
-def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
-    """
-    Check correctness of one instance of example code.
-    """
-
-    print(f'::group::Test for {mainfile}...')
-    # 是否跳过测试
-    if skiptest:
-        summary += f'## 跳过：{mainfile}\n测试因 {mainfile + ".skip_test"} 文件存在而跳过\n\n'
-        print(f'::group::{mainfile}: test skipped')
-        print(f'::endgroup::')
-        return SKIPPED, summary
-    
-    # 检测文件存在
-    for file in auxfile:
-        if not os.path.exists(file):
-            print(f'::endgroup::')
-            print(f'::error file={file},title=file {file} not found::')
-            summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
-            return ERROR, summary
-    for file in example:
-        if not os.path.exists(file):
-            print(f'::endgroup::')
-            print(f'::error file={file},title=file {file} not found::')
-            summary += f'## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n'
-            return ERROR, summary
-        
-    # 编译
-    compile_command = f'g++ -std=c++17 {" ".join(auxfiles)} -o {mainfile.split(".")[0]}'
-    print(compile_command, end=' ')
-
+def run_test_cpp(test_file):
+    auxfiles = " ".join(get_auxfiles(test_file))
+    executable = test_file.split(".")[0]
+    compile_command = f"g++ -std=c++17 {auxfiles} -o {executable}"
+    print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
-        print(f'\n::endgroup::')
-        print(f'::error file={mainfile},title=CE!::Compile Error! with error code {result.returncode}')
-        summary += f'## CE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **编译指令**：{compile_command}\n- **错误代码**：{result.returncode}\n\n'
-        return ERROR, summary
-    else:
-        print('OK')
-  
-    # 对不提供数据点的特殊处理
-    if len(examples) == 0:
-        print(f'\n::endgroup::')
-        print(f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.cpp', '.skip_test')}")
-        summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- 编译指令：{compile_command}\n成功编译，但因数据不存在未能进一步测试。**如果不希望进行测试，请创建{mainfile.replace(".cpp", ".skip_test")}**\n\n'
-        return ACCEPTED, summary  
+        print(incolor(RED, "CE"))
+        print(
+            f"::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
+        )
+        return 1, f"❌ `{test_file}` 编译错误（错误码；{result.returncode}）"
+    print(incolor(GREEN, "OK"))
 
-    # 逐个测试
-    executable = mainfile.split(".")[0]
-    check_command = (f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}' for e in examples)
-    for check, e in zip(check_command, examples):
-        print(f'{executable} < {e} > {e.replace(".in", ".out")}', end=' ')
-        with open(e, 'r') as fstdin:
-            with open(e.replace(".in", ".out"), 'w') as fstdout:
-                result = subprocess.run(executable, shell=True, stdin=fstdin, stdout=fstdout)
+    in_file, out_file, ans_file = get_examples(test_file)
+    if not (os.path.exists(in_file) and os.path.exists(ans_file)):
+        print(
+            f"::warning file={test_file},title=样例不存在::样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件\n::endgroup::"
+        )
+        return (
+            1,
+            f"⚠️ `{test_file}` 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
+        )
+
+    print(f"{executable}", end=" ")
+    try:
+        result = subprocess.run(
+            executable,
+            shell=True,
+            stdin=open(in_file, "r"),
+            stdout=open(out_file, "w"),
+            timeout=30,
+        )
         if result.returncode != 0:
-            print(f'\n::endgroup::')
-            print(f'::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}')
-            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
-            return ERROR, summary
-        else:
-            print('OK')
+            print(incolor(RED, "RE"))
+            print(
+                f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+            )
+            return 1, f"❌ `{test_file}` 运行时错误（错误码：{result.returncode}）"
+        print(incolor(GREEN, "OK"))
+        return 0, f"✅ `{test_file}` 编译、运行成功"
+    except subprocess.TimeoutExpired:
+        print(incolor(RED, "TLE"))
+        print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        return 1, f"❌ `{test_file}` 运行时间超出 30 秒限制"
 
-        print(check, end=' ')
-        result = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL)
+
+def run_test_py(test_file):
+    in_file, out_file, ans_file = get_examples(test_file)
+    if not (os.path.exists(in_file) and os.path.exists(ans_file)):
+        print(
+            f"::warning file={test_file},title=样例不存在::样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件\n::endgroup::"
+        )
+        return (
+            1,
+            f"⚠️ `{test_file}` 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
+        )
+    command = f"{sys.executable} {test_file}"
+    print(command, end=" ")
+    try:
+        result = subprocess.run(
+            [sys.executable, test_file],
+            text=True,
+            input=open(in_file).read(),
+            capture_output=True,
+            timeout=30,
+        )
+        open(out_file, "w+").write(result.stdout)
         if result.returncode != 0:
-            print(f'\n::endgroup::')
-            print(f'::error file={e},title=WA!::Wrong Answer on: {e}')
-            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n\n期望得到：\n```\n{open(e.replace(".in", ".ans")).read()}\n```\n但得到输出：\n```\n{open(e.replace(".in", ".out")).read()}\n```\n\n'
-            return ERROR, summary
-        else:
-            print(f'Accepted!')
+            print(incolor(RED, "RE"))
+            print(
+                f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+            )
+            return 1, f"❌ `{test_file}` 运行时错误（错误码：{result.returncode}）"
+        print(incolor(GREEN, "OK"))
+        return 0, f"✅ `{test_file}` 运行成功"
+    except subprocess.TimeoutExpired:
+        print(incolor(RED, "TLE"))
+        print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        return 1, f"❌ `{test_file}` 运行时间超出 30 秒限制"
 
-    summary += f'## AC: {mainfile} ({len(examples)} tests)\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n\n'
-    print(f'::endgroup::')
-    return ACCEPTED, summary
 
-mainfiles, auxfiles, examples, skiptests = eval(os.environ.get("FILES_TO_TEST"))
-summary = ''
+def check_answer(test_file):
+    in_file, out_file, ans_file = get_examples(test_file)
+    command = f"diff -b -B {out_file} {ans_file}"
+    print(command, end=" ")
+    result = subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
+    if result.returncode != 0:
+        print(incolor(RED, "WA"))
+        print(f"::error file={test_file},title=输出错误::输出与答案（{ans_file}）不同\n::endgroup::")
+        return (
+            1,
+            f"❌ `{test_file}` 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().rstrip().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(out_file).read().rstrip().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
+        )
+    print(incolor(GREEN, "AC"))
+    print("::endgroup::")
+    return 0, f"✅ `{test_file}` 通过测试"
 
-cnt_ac, cnt_error, cnt_skip = 0, 0, 0
-for mainfile, auxfile, example, skiptest in zip(mainfiles, auxfiles, examples, skiptests):
-    correctness, summary = correctness_check(mainfile, auxfile, example, skiptest, summary)
-    cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
-    cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
-    cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
 
-with open(os.environ.get('GITHUB_STEP_SUMMARY'), 'w') as f:
-    f.write(f'# TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n\n')
-    f.write(summary)
-    print(f'::group::TOTAL {len(mainfiles)} TESTS, {cnt_ac} ACCEPTED, {cnt_skip} SKIPPED, {cnt_error} ERROR\n::endgroup::')
+def check_correctness(test_file, language):
+    if not os.path.exists(test_file):
+        print(incolor(RED, "文件不存在"))
+        print("::endgroup::")
+        return 1, f"❌ `{test_file}` 文件不存在"
+    correctness, test_summary = globals()[f"run_test_{language}"](test_file)
+    if correctness != 0:
+        return correctness, test_summary
+    return check_answer(test_file)
 
-if cnt_error:
-    exit(1)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-language", type=str, required=True, choices=["cpp", "py"])
+    language = parser.parse_args().language
+    test_files = os.environ.get(f"TEST_{language.upper()}_FILES", "").split()
+    cnts = [0, 0]
+    summary = ""
+    for test_file in test_files:
+        print("::group::" + incolor(BLUE, f"测试 {test_file}"))
+        correctness, test_summary = check_correctness(test_file, language)
+        cnts[correctness] += 1
+        summary += f"- {test_summary}\n"
+    general_summary = (
+        f"已完成 {len(test_files)} 个测试，其中通过 {cnts[0]} 个，错误/警告/运行超时 {cnts[1]} 个"
+    )
+    print(general_summary)
+    open(os.environ.get("GITHUB_STEP_SUMMARY"), "w").write(
+        f"**{general_summary}**\n\n{summary}"
+    )
+    exit(cnts[1])
