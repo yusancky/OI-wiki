@@ -16,7 +16,7 @@ def run_test_cpp(test_file):
         print(
             f"::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
         )
-        return 1, f"❌ 编译错误（错误码；{result.returncode}）"
+        return 1, f"❌ `{test_file}` 编译错误（错误码；{result.returncode}）"
     print(incolor(GREEN, "OK"))
 
     in_file, out_file, ans_file = get_examples(test_file)
@@ -26,7 +26,7 @@ def run_test_cpp(test_file):
         )
         return (
             1,
-            f"⚠️ 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
+            f"⚠️ `{test_file}` 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
         )
 
     print(f"{executable}", end=" ")
@@ -43,13 +43,13 @@ def run_test_cpp(test_file):
             print(
                 f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
             )
-            return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
+            return 1, f"❌ `{test_file}` 运行时错误（错误码：{result.returncode}）"
         print(incolor(GREEN, "OK"))
-        return 0, f"✅ 编译、运行成功"
+        return 0, f"✅ `{test_file}` 编译、运行成功"
     except subprocess.TimeoutExpired:
         print(incolor(RED, "TLE"))
         print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
-        return 1, f"❌ 运行时间超出 30 秒限制"
+        return 1, f"❌ `{test_file}` 运行时间超出 30 秒限制"
 
 
 def run_test_py(test_file):
@@ -60,7 +60,7 @@ def run_test_py(test_file):
         )
         return (
             1,
-            f"⚠️ 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
+            f"⚠️ `{test_file}` 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
         )
     command = f"{sys.executable} {test_file}"
     print(command, end=" ")
@@ -78,13 +78,13 @@ def run_test_py(test_file):
             print(
                 f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
             )
-            return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
+            return 1, f"❌ `{test_file}` 运行时错误（错误码：{result.returncode}）"
         print(incolor(GREEN, "OK"))
-        return 0, f"✅ 运行成功"
+        return 0, f"✅ `{test_file}` 运行成功"
     except subprocess.TimeoutExpired:
         print(incolor(RED, "TLE"))
         print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
-        return 1, f"❌ 运行时间超出 30 秒限制"
+        return 1, f"❌ `{test_file}` 运行时间超出 30 秒限制"
 
 
 def check_answer(test_file):
@@ -97,17 +97,18 @@ def check_answer(test_file):
         print(f"::error file={test_file},title=输出错误::输出与答案（{ans_file}）不同\n::endgroup::")
         return (
             1,
-            f"❌ 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
+            f"❌ `{test_file}` 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
         )
     print(incolor(GREEN, "AC"))
     print("::endgroup::")
-    return 0, f"✅ 通过测试"
+    return 0, f"✅ `{test_file}` 通过测试"
 
 
 def check_correctness(test_file, language):
     if not os.path.exists(test_file):
-        print(incolor(RED, f"文件不存在\n::endgroup::"))
-        return 1, f"❌ 文件不存在"
+        print(incolor(RED, "文件不存在"))
+        print("::endgroup::")
+        return 1, f"❌ `{test_file}` 文件不存在"
     correctness, test_summary = globals()[f"run_test_{language}"](test_file)
     if correctness != 0:
         return correctness, test_summary
@@ -125,7 +126,7 @@ if __name__ == "__main__":
         print("::group::" + incolor(BLUE, f"测试 {test_file}"))
         correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
-        summary += "- " + test_summary + "\n"
+        summary += f"- {test_summary}\n"
     general_summary = (
         f"已完成 {len(test_files)} 个测试，其中通过 {cnts[0]} 个，错误/警告/运行超时 {cnts[1]} 个"
     )
