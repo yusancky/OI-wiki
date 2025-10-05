@@ -4,24 +4,9 @@ on:
   push:
     branches:
       - master
-    paths:
-      - .github/workflows/check-example-codes.yml
-      - scripts/check-example-codes/**/*
-      - docs/**/*.cpp
-      - docs/**/*.py
-      - docs/**/*.in
-      - docs/**/*.ans
   pull_request:
     branches:
       - master
-    paths:
-      - .github/workflows/check-example-codes.yml
-      - scripts/check-example-codes/**/*
-      - docs/**/*.cpp
-      - docs/**/*.py
-      - docs/**/*.in
-      - docs/**/*.ans
-  workflow_dispatch:
 
 jobs:
   file-list:
@@ -37,7 +22,6 @@ jobs:
       - name: Get changed code files
         id: changed-files
         uses: tj-actions/changed-files@v46
-        if: github.event_name != 'workflow_dispatch'
         with:
           files: |
             docs/**/*.cpp
@@ -56,7 +40,7 @@ jobs:
           all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
 
   cpp-correctness:
-    name: Offline C++ Test
+    name: C++ Correctness Test
     needs: file-list
     if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
@@ -64,6 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - name: Install C++
         run: |
           sudo apt-get update
@@ -71,7 +58,7 @@ jobs:
       - name: Correctness Check
         env: 
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
-        run: python scripts/check-example-codes/cpp/correctness.py
+        run: python scripts/check-example-codes/correctness.py -language cpp
 
   cpp-undefined-behaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
@@ -93,7 +80,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Ubuntu
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-macos:
     name: C++ UB Check (Arm64 macOS)
@@ -118,7 +105,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: arm64 MacOS
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-rv:
     name: C++ UB Check (RISC-V Ubuntu)
@@ -157,7 +144,7 @@ jobs:
           echo "::endgroup::"
       - name: Undefined Behaviors Check
         # The environment variables are set in Launch Risc-V Docker step
-        run: docker exec ubtest python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: docker exec ubtest python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-windows:
     name: C++ UB Check (x86_64 Windows)
@@ -192,8 +179,7 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: |
           chcp 65001
-          python scripts/check-example-codes/cpp/undefined-behaviors.py
-
+          python scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-alpine:
     name: C++ UB Check (x86_64 Alpine)
@@ -222,7 +208,7 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp/undefined-behaviors.py
+        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   py-correctness:
     name: Offline Python Test
@@ -234,3 +220,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Correctness Check
+        env: 
+          TEST_PY_FILES: ${{ needs.file-list.outputs.TEST_PY_FILES }}
+        run: python scripts/check-example-codes/correctness.py -language py

@@ -1,13 +1,13 @@
 import os
 
 
-def get_auxfiles(cpp_file):
-    dirname = os.path.dirname(cpp_file)
-    basename = os.path.splitext(os.path.basename(cpp_file))[0]
+def get_auxfiles(code_file):
+    dirname = os.path.dirname(code_file)
+    basename, extname = os.path.splitext(os.path.basename(code_file))
     auxfiles = []
     for root, _, files in os.walk(dirname):
         for file in files:
-            if file.split(".")[0] == basename.split(".")[0] and file.endswith(".cpp"):
+            if file.split(".")[0] == basename.split(".")[0] and file.endswith(extname):
                 auxfiles.append(os.path.normpath(os.path.join(root, file)))
     return auxfiles
 
