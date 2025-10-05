@@ -1,4 +1,3 @@
-from datetime import datetime
 import os
 import subprocess
 from utils import *
@@ -185,7 +184,7 @@ def ub_check(test_file):
     return_status = {}
     this_file_looks_odd = False
     for compile_command, compile_product in zip(compile_commands, compile_products):
-        printbuffer = f"{datetime.now().strftime('%H:%M:%S')} {compile_command} "
+        printbuffer = compile_command + " "
         fold_this_run = True
         status_vector = []
         result = subprocess.run(compile_command, shell=True, capture_output=True)
@@ -208,7 +207,7 @@ def ub_check(test_file):
                 printbuffer += format_error(result.stderr.decode())
 
             in_file, out_file, ans_file = get_examples(test_file)
-            printbuffer += f"{datetime.now().strftime('%H:%M:%S')} {compile_product} < {in_file} > {out_file} "
+            printbuffer += f"{compile_product} < {in_file} > {out_file} "
             result = subprocess.run(
                 f"{os.path.join(os.path.curdir, compile_product)}",
                 capture_output=True,
