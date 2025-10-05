@@ -12,11 +12,12 @@ def run_test_cpp(test_file):
     print(compile_command, end=" ")
     result = subprocess.run(compile_command, shell=True)
     if result.returncode != 0:
+        print(incolor(RED, "CE"))
         print(
-            f"CE\n::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
+            f"::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
         )
         return 1, f"❌ 编译错误（错误码；{result.returncode}）"
-    print("OK")
+    print(incolor(GREEN, "OK"))
 
     in_file, out_file, ans_file = get_examples(test_file)
     if not (os.path.exists(in_file) and os.path.exists(ans_file)):
@@ -28,7 +29,7 @@ def run_test_cpp(test_file):
             f"⚠️ 样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件",
         )
 
-    print(f"运行 {executable}（样例输入：{in_file}）", end=" ")
+    print(f"{executable}", end=" ")
     try:
         result = subprocess.run(
             executable,
@@ -38,37 +39,43 @@ def run_test_cpp(test_file):
             timeout=30,
         )
         if result.returncode != 0:
+            print(incolor(RED, "RE"))
             print(
-                f"RE\n::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+                f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
             )
             return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
-        print("OK")
+        print(incolor(GREEN, "OK"))
         return 0, f"✅ 编译、运行成功"
     except subprocess.TimeoutExpired:
-        print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        print(incolor(RED, "TLE"))
+        print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
 
 
 def run_test_py(test_file):
     in_file, out_file, ans_file = get_examples(test_file)
+    command = f"{sys.executable} {test_file}"
+    print(command, end=" ")
     try:
         result = subprocess.run(
             [sys.executable, test_file],
+            text=True,
             input=open(in_file).read(),
             capture_output=True,
-            text=True,
             timeout=30,
         )
         open(out_file, "w+").write(result.stdout)
         if result.returncode != 0:
+            print(incolor(RED, "RE"))
             print(
-                f"RE\n::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
+                f"::error file={test_file},title=运行时错误::运行时错误（错误码：{result.returncode}）\n::endgroup::"
             )
             return 1, f"❌ 运行时错误（错误码：{result.returncode}）"
-        print("OK")
+        print(incolor(GREEN, "OK"))
         return 0, f"✅ 运行成功"
     except subprocess.TimeoutExpired:
-        print(f"\n::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
+        print(incolor(RED, "TLE"))
+        print(f"::error file={test_file},title=运行超时::运行时间超出 30 秒限制\n::endgroup::")
         return 1, f"❌ 运行时间超出 30 秒限制"
 
 
@@ -85,13 +92,13 @@ def check_answer(test_file):
             1,
             f"❌ 编译、运行成功，但输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
         )
-    print("Accepted!\n::endgroup::")
+    print(incolor(GREEN, "Accepted!\n::endgroup::"))
     return 0, f"✅ 编译、运行成功，且输出正确"
 
 
 def check_correctness(test_file, language):
     if not os.path.exists(test_file):
-        print(f"文件不存在\n::endgroup::")
+        print(incolor(RED, f"文件不存在\n::endgroup::"))
         return 1, f"❌ 文件不存在"
     correctness, test_summary = globals()[f"run_test_{language}"](test_file)
     if correctness != 0:
@@ -107,7 +114,7 @@ if __name__ == "__main__":
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
-        print(f"::group::测试 {test_file}")
+        print("::group::" + incolor(BLUE, f"测试 {test_file}"))
         correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
