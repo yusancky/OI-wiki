@@ -255,7 +255,7 @@ def ub_check(test_file):
         print(
             "::group::" if fold_this_run else incolor(RED, "❌ ")
             + datetime.now().strftime('%H:%M:%S')
-            + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
+            f"With config: {compile_product.split('/')[-1]}..." # + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
         )
         print(printbuffer + "::endgroup::" if fold_this_run else "")
         return_status[compile_product] = status_vector
