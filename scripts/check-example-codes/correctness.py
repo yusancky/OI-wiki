@@ -58,7 +58,7 @@ def run_test_py(test_file):
     print(command, end=" ")
     try:
         result = subprocess.run(
-            command,
+            [sys.executable, test_file],
             shell=True,
             input=open(in_file).read(),
             capture_output=True,
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
-        print(incolor(BLUE, f"::group::测试 {test_file}"))
+        print(f"::group::测试 {test_file}")
         correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
