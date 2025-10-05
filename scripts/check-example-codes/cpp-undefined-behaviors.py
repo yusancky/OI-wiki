@@ -261,7 +261,7 @@ def ub_check(test_file):
             print("\n::endgroup::")
         else:
             print(
-                incolor(RED, "✘ ")
+                incolor(RED, "❌ ")
                 + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
             )
             print(printbuffer)
