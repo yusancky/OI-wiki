@@ -94,9 +94,7 @@ def check_answer(test_file):
     result = subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
         print(incolor(RED, "WA"))
-        print(
-            f"::error file={test_file},title=输出错误::输出与答案（{ans_file}）不同\n::endgroup::"
-        )
+        print(f"::error file={test_file},title=输出错误::输出与答案（{ans_file}）不同\n::endgroup::")
         return (
             1,
             f"❌ 输出与答案不同\n    答案：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```\n    输出：\n    ```\n    {open(ans_file).read().replace(os.linesep, f'{os.linesep}    ')}\n    ```",
