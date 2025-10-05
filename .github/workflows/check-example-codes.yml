@@ -9,8 +9,8 @@ on:
       - master
 
 jobs:
-  file-list:
-    name: Build File List
+  file-lists:
+    name: Build File Lists
     runs-on: ubuntu-latest
     outputs:
       TEST_CPP_FILES: ${{ steps.get-files.outputs.TEST_CPP_FILES }}
@@ -41,8 +41,8 @@ jobs:
 
   cpp-correctness:
     name: C++ Correctness Test
-    needs: file-list
-    if: needs.file-list.outputs.TEST_CPP_FILES != 'None'
+    needs: file-lists
+    if: needs.file-lists.outputs.TEST_CPP_FILES != 'None'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,12 +57,12 @@ jobs:
           sudo apt-get install -y g++
       - name: Correctness Check
         env: 
-          TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
+          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
         run: python scripts/check-example-codes/correctness.py -language cpp
 
   cpp-undefined-behaviors-ubuntu:
     name: C++ UB Check (x86_64 Ubuntu)
-    needs: [file-list, cpp-correctness]
+    needs: [file-lists, cpp-correctness]
     runs-on: ubuntu-latest
     container: ghcr.io/trickeye/ubuntu_gcc1x:clang
     outputs:
@@ -77,14 +77,14 @@ jobs:
           apt-get install -y g++-9
       - name: Undefined Behaviors Check
         env: 
-          TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
+          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Ubuntu
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-macos:
     name: C++ UB Check (Arm64 macOS)
-    needs: [file-list, cpp-correctness]
+    needs: [file-lists, cpp-correctness]
     runs-on: macos-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -102,14 +102,14 @@ jobs:
           echo "::endgroup::"
       - name: Undefined Behaviors Check
         env: 
-          TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
+          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
           RUNS_ON: arm64 MacOS
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   cpp-undefined-behaviors-rv:
     name: C++ UB Check (RISC-V Ubuntu)
-    needs: [file-list, cpp-correctness]
+    needs: [file-lists, cpp-correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -125,7 +125,7 @@ jobs:
             --volume $PWD:$PWD \
             --volume $GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY \
             --workdir $PWD \
-            --env TEST_CPP_FILES="${{ needs.file-list.outputs.TEST_CPP_FILES }}" \
+            --env TEST_CPP_FILES="${{ needs.file-lists.outputs.TEST_CPP_FILES }}" \
             --env RUNS_ON="riscv64 Ubuntu" \
             --env PYTHONIOENCODING="UTF-8" \
             --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
@@ -148,7 +148,7 @@ jobs:
 
   cpp-undefined-behaviors-windows:
     name: C++ UB Check (x86_64 Windows)
-    needs: [file-list, cpp-correctness]
+    needs: [file-lists, cpp-correctness]
     runs-on: windows-2025
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -174,7 +174,7 @@ jobs:
           echo ::endgroup::
       - name: Undefined Behaviors Check
         env: 
-          TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
+          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Windows
           PYTHONIOENCODING: UTF-8
         run: |
@@ -183,7 +183,7 @@ jobs:
 
   cpp-undefined-behaviors-alpine:
     name: C++ UB Check (x86_64 Alpine)
-    needs: [file-list, cpp-correctness]
+    needs: [file-lists, cpp-correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -205,15 +205,15 @@ jobs:
           echo "::endgroup::"
       - name: Undefined Behaviors Check
         env: 
-          TEST_CPP_FILES: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
+          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
   py-correctness:
     name: Offline Python Test
-    needs: file-list
-    if: needs.file-list.outputs.TEST_PY_FILES != 'None'
+    needs: file-lists
+    if: needs.file-lists.outputs.TEST_PY_FILES != 'None'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -224,5 +224,5 @@ jobs:
           python-version: '3.13'
       - name: Correctness Check
         env: 
-          TEST_PY_FILES: ${{ needs.file-list.outputs.TEST_PY_FILES }}
+          TEST_PY_FILES: ${{ needs.file-lists.outputs.TEST_PY_FILES }}
         run: python scripts/check-example-codes/correctness.py -language py
