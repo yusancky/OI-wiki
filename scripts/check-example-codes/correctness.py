@@ -93,6 +93,7 @@ def check_answer(test_file):
     print(command, end=" ")
     result = subprocess.run(command, shell=True, stdout=subprocess.DEVNULL)
     if result.returncode != 0:
+        print(incolor(RED, "WA"))
         print(
             f"::error file={test_file},title=输出错误::编译、运行成功，但输出与答案（{ans_file}）不同\n::endgroup::"
         )
