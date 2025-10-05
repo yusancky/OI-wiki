@@ -253,7 +253,7 @@ def ub_check(test_file):
             printbuffer += incolor(STATUS_COLOR(status), status) + "; "
 
         print(
-            "::group::" if fold_this_run else incolor(RED, "❌ ")
+            ("::group::" if fold_this_run else incolor(RED, "❌ "))
             + datetime.now().strftime('%H:%M:%S')
             f"With config: {compile_product.split('/')[-1]}..." # + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
         )
