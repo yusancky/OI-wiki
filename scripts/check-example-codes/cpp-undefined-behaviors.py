@@ -193,14 +193,14 @@ def ub_check(test_file):
             this_file_looks_odd = True
             fold_this_run = False
             status_vector = ["CE"]
-            printbuffer += incolor(STATUS_COLOR["CE"], "CE") + "\n"
+            printbuffer += incolor(RED, "CE") + "\n"
             printbuffer += "  ---- Compile Stdout: ----\n"
             printbuffer += format_error(result.stdout.decode())
             printbuffer += "  ---- Compile Stderr: ----\n"
             printbuffer += format_error(result.stderr.decode())
         else:
             status_vector = ["AC"]
-            printbuffer += incolor(STATUS_COLOR["AC"], "AC") + "\n"
+            printbuffer += incolor(GREEN, "AC") + "\n"
             if result.stdout or result.stderr:
                 printbuffer += "  ---- Compile Stdout: ----\n"
                 printbuffer += format_error(result.stdout.decode())
@@ -221,7 +221,7 @@ def ub_check(test_file):
                 this_file_looks_odd = True
                 fold_this_run = False
                 status_vector.append("RE")
-                printbuffer += incolor(STATUS_COLOR["RE"], "RE") + "\n"
+                printbuffer += incolor(RED, "RE") + "\n"
                 printbuffer += "  ---- Execution Stdout: ----\n"
                 printbuffer += format_error(result.stdout.decode())
                 printbuffer += "  ---- Execution Stderr: ----\n"
@@ -252,20 +252,12 @@ def ub_check(test_file):
         for status in status_vector:
             printbuffer += incolor(STATUS_COLOR[status], status) + "; "
 
-        if fold_this_run:
-            print(
-                "::group::"
-                + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
-            )
-            print(printbuffer)
-            print("\n::endgroup::")
-        else:
-            print(
-                incolor(RED, "❌ ")
-                + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
-            )
-            print(printbuffer)
-            print("\n")
+        print(
+            "::group::" if fold_this_run else incolor(RED, "❌ ")
+            + datetime.now().strftime('%H:%M:%S')
+            + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
+        )
+        print(printbuffer + "::endgroup::" if fold_this_run else "")
         return_status[compile_product] = status_vector
 
     if this_file_looks_odd:
