@@ -254,10 +254,10 @@ def ub_check(test_file):
 
         if fold_this_run:
             print("::group::" + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
-            print(printbuffer + "\n::endgroup::")
+            print(f"{printbuffer}\n::endgroup::", flush=True)
         else:
             print("❌ " + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
-            print(printbuffer)
+            print(printbuffer, flush=True)
         return_status[compile_product] = status_vector
 
     if this_file_looks_odd:
