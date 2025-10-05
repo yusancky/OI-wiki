@@ -59,7 +59,7 @@ def run_test_py(test_file):
     try:
         result = subprocess.run(
             [sys.executable, test_file],
-            shell=True,
+            text=True,
             input=open(in_file).read(),
             capture_output=True,
             timeout=30,
