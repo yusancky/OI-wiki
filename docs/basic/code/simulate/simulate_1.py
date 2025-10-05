@@ -7,4 +7,3 @@ while True:  # 用死循环来枚举
         break
     dist -= d
 print(time)  # 输出得到的结果
-
