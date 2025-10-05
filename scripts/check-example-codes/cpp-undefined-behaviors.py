@@ -253,10 +253,16 @@ def ub_check(test_file):
             printbuffer += incolor(STATUS_COLOR(status), status) + "; "
 
         if fold_this_run:
-            print("::group::" + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
+            print(
+                "::group::"
+                + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
+            )
             print(f"{printbuffer}\n::endgroup::", flush=True)
         else:
-            print("❌ " + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
+            print(
+                "❌ "
+                + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
+            )
             print(printbuffer, flush=True)
         return_status[compile_product] = status_vector
 
