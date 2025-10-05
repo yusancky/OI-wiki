@@ -268,17 +268,10 @@ def ub_check(test_file):
             print("\n")
         return_status[compile_product] = status_vector
 
-    print(incolor(BLUE, f"Result for {test_file}: "))
-    for key in return_status:
-        print(f"-  {key}: ", end="")
-        for status in return_status[key]:
-            print(incolor(STATUS_COLOR[status], status), end="; ")
-        print()
     if this_file_looks_odd:
         print(
             f"::error file={test_file},title=Potential UB::Potential UB. Please take a look."
         )
-    print()
     return this_file_looks_odd, return_status
 
 
@@ -293,9 +286,8 @@ if __name__ == "__main__":
         for key in return_status:
             output_status[key] = [str(i) for i in return_status[key]]
         output[test_file] = output_status
-        cnts[1 if this_file_looks_odd else 0] += 1
+        cnts[int(this_file_looks_odd)] += 1
     with open("output.txt", "w") as f:
         f.write(str(output))
-    if cnts[1]:
-        print(f"Found {cnts[1]} files with potential UB.")
-        exit(cnts[1])
+    print(f"Found {cnts[1]} files with potential UB.")
+    exit(cnts[1])
