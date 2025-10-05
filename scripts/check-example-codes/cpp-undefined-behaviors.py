@@ -5,15 +5,6 @@ from utils import *
 
 CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
-RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
-STATUS_COLOR = {
-    "AC": GREEN,
-    "CE": RED,
-    "RE": RED,
-    "WA": RED,
-}
-incolor = lambda color, text: f"{color}{text}{RESET}"
-
 
 def format_error(error_str):
     return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
