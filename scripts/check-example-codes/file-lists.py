@@ -44,7 +44,15 @@ if __name__ == "__main__":
         else:
             changed_codes.update(examples2code(changed_file))
     for extname in extnames:
-        changed_extnamed_codes = " ".join(
-            filter(lambda x: x.endswith(extname), changed_codes)
-        )
-        output(f"TEST_{extname[1:].upper()}_FILES", changed_extnamed_codes)
+        if extname == ".py":
+            all_extnamed_codes = []
+            for root, _, files in os.walk("docs"):
+                for file in files:
+                    if file.endswith(extname) and check_availability(os.path.join(root, file)):
+                        all_extnamed_codes.append(check_availability(os.path.join(root, file)))
+            output(f"TEST_{extname[1:].upper()}_FILES", " ".join(all_extnamed_codes))
+        else:
+            changed_extnamed_codes = " ".join(
+                filter(lambda x: x.endswith(extname), changed_codes)
+            )
+            output(f"TEST_{extname[1:].upper()}_FILES", changed_extnamed_codes)
