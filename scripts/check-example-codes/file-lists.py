@@ -5,6 +5,8 @@ extnames = [".cpp", ".py"]
 
 def check_availability(file):
     dirname = os.path.dirname(file)
+    if dirname.split('/')[-1] in ["images"]:
+        return false
     basename = os.path.splitext(os.path.basename(file))[0]
     extname = os.path.splitext(os.path.basename(file))[1]
     if "." in basename:
