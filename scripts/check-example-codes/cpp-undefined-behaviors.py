@@ -252,12 +252,12 @@ def ub_check(test_file):
         for status in status_vector:
             printbuffer += incolor(STATUS_COLOR(status), status) + "; "
 
-        print(
-            ("::group::" if fold_this_run else incolor(RED, "❌ "))
-            + datetime.now().strftime('%H:%M:%S')
-            + f"With config: {compile_product.split('/')[-1]}..." # + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
-        )
-        print(printbuffer + "::endgroup::" if fold_this_run else "")
+        if fold_this_run:
+            print("::group::" + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
+            print(printbuffer + "\n::endgroup::")
+        else:
+            print("❌ " + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}..."))
+            print(printbuffer)
         return_status[compile_product] = status_vector
 
     if this_file_looks_odd:
