@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime
 import os
 import subprocess
@@ -9,46 +8,16 @@ CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterpri
 RED, GREEN, BLUE, RESET = "\033[0;31m", "\033[0;32m", "\033[0;34m", "\033[0m"
 incolor = lambda color, text: f"{color}{text}{RESET}"
 
-
-@dataclass(frozen=True)
-class Status:
-    errcode: int
-    color: str
-
-    def __str__(self):
-        return f"{self.__class__.__name__}({self.errcode})"
-
-    def colored(self):
-        return incolor(self.color, self)
-
-
-@dataclass(frozen=True)
-class AC(Status):
-    errcode: int = 0
-    color: str = GREEN
-
-
-@dataclass(frozen=True)
-class CE(Status):
-    errcode: int
-    color: str = RED
-
-
-@dataclass(frozen=True)
-class RE(Status):
-    errcode: int
-    color: str = RED
-
-
-@dataclass(frozen=True)
-class WA(Status):
-    errcode: int
-    color: str = RED
-
+# 状态字符串和颜色映射
+STATUS_COLOR = {
+    "AC": GREEN,
+    "CE": RED,
+    "RE": RED,
+    "WA": RED,
+}
 
 def format_error(error_str):
     return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
-
 
 def ub_check(test_file):
     print(incolor(BLUE, f"Test for {test_file}..."))
@@ -227,19 +196,20 @@ def ub_check(test_file):
     for compile_command, compile_product in zip(compile_commands, compile_products):
         printbuffer = f"{datetime.now().strftime('%H:%M:%S')} {compile_command} "
         fold_this_run = True
+        status_vector = []
         result = subprocess.run(compile_command, shell=True, capture_output=True)
         if result.returncode != 0:
             this_file_looks_odd = True
             fold_this_run = False
-            status_vector = [CE(result.returncode)]
-            printbuffer += status_vector[0].colored() + "\n"
+            status_vector = ["CE"]
+            printbuffer += incolor(STATUS_COLOR["CE"], "CE") + "\n"
             printbuffer += "  ---- Compile Stdout: ----\n"
             printbuffer += format_error(result.stdout.decode())
             printbuffer += "  ---- Compile Stderr: ----\n"
             printbuffer += format_error(result.stderr.decode())
         else:
-            status_vector = [AC()]
-            printbuffer += status_vector[0].colored() + "\n"
+            status_vector = ["AC"]
+            printbuffer += incolor(STATUS_COLOR["AC"], "AC") + "\n"
             if result.stdout or result.stderr:
                 printbuffer += "  ---- Compile Stdout: ----\n"
                 printbuffer += format_error(result.stdout.decode())
@@ -259,8 +229,8 @@ def ub_check(test_file):
             if result.returncode != 0:
                 this_file_looks_odd = True
                 fold_this_run = False
-                status_vector.append(RE(result.returncode))
-                printbuffer += status_vector[-1].colored() + "\n"
+                status_vector.append("RE")
+                printbuffer += incolor(STATUS_COLOR["RE"], "RE") + "\n"
                 printbuffer += "  ---- Execution Stdout: ----\n"
                 printbuffer += format_error(result.stdout.decode())
                 printbuffer += "  ---- Execution Stderr: ----\n"
@@ -276,10 +246,10 @@ def ub_check(test_file):
                 if result.returncode != 0:
                     this_file_looks_odd = True
                     fold_this_run = False
-                    status_vector.append(WA(result.returncode))
+                    status_vector.append("WA")
                 else:
-                    status_vector.append(AC())
-                printbuffer += status_vector[-1].colored() + "\n"
+                    status_vector.append("AC")
+                printbuffer += incolor(STATUS_COLOR[status_vector[-1]], status_vector[-1]) + "\n"
                 if result.returncode != 0:
                     printbuffer += "  ---- We expect: ----\n"
                     printbuffer += format_error(open(ans_file).read())
@@ -287,7 +257,7 @@ def ub_check(test_file):
                     printbuffer += format_error(open(out_file).read())
         printbuffer += f"{compile_product.split(os.path.pathsep)[-1]}: "
         for status in status_vector:
-            printbuffer += status.colored() + "; "
+            printbuffer += incolor(STATUS_COLOR[status], status) + "; "
 
         if fold_this_run:
             print(
@@ -309,7 +279,7 @@ def ub_check(test_file):
     for key in return_status:
         print(f"-  {key}: ", end="")
         for status in return_status[key]:
-            print(status.colored(), end="; ")
+            print(incolor(STATUS_COLOR[status], status), end="; ")
         print()
     if this_file_looks_odd:
         print(
@@ -317,7 +287,6 @@ def ub_check(test_file):
         )
     print()
     return this_file_looks_odd, return_status
-
 
 if __name__ == "__main__":
     test_files = os.environ.get("TEST_CPP_FILES", "").split(" ")
