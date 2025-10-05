@@ -114,7 +114,7 @@ if __name__ == "__main__":
     cnts = [0, 0]
     summary = ""
     for test_file in test_files:
-        print(f"::group::测试 {test_file}")
+        print("::group::" + incolor(BLUE, f"测试 {test_file}"))
         correctness, test_summary = check_correctness(test_file, language)
         cnts[correctness] += 1
         summary += "- " + test_summary + "\n"
