@@ -19,7 +19,7 @@ class Status:
         return f"{self.__class__.__name__}({self.errcode})"
 
     def colored(self):
-        return f"{self.color}{self}{RESET}"
+        return incolor(self.color, self)
 
 
 @dataclass(frozen=True)
