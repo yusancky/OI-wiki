@@ -241,7 +241,7 @@ def ub_check(test_file):
                 else:
                     status_vector.append("AC")
                 printbuffer += (
-                    incolor(STATUS_COLOR[status_vector[-1]], status_vector[-1]) + "\n"
+                    incolor(STATUS_COLOR(status_vector[-1]), status_vector[-1]) + "\n"
                 )
                 if result.returncode != 0:
                     printbuffer += "  ---- We expect: ----\n"
@@ -250,7 +250,7 @@ def ub_check(test_file):
                     printbuffer += format_error(open(out_file).read())
         printbuffer += f"{compile_product.split(os.path.pathsep)[-1]}: "
         for status in status_vector:
-            printbuffer += incolor(STATUS_COLOR[status], status) + "; "
+            printbuffer += incolor(STATUS_COLOR(status), status) + "; "
 
         print(
             "::group::" if fold_this_run else incolor(RED, "❌ ")
