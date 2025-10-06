@@ -7,20 +7,16 @@ def check_availability(file):
     if not os.path.exists(file):
         return False
     dirname = os.path.dirname(file)
-    if dirname.split("/")[-1] in ["images"]:
+    if "code" not in dirname.split("/"):
         return False
     basename, extname = os.path.splitext(os.path.basename(file))
-    if "." in basename:
-        if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
-            return False
-        else:
-            basename = basename.split(".")[0]
-            if not os.path.exists(os.path.join(dirname, basename + extname)):
-                return False
     if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
         return False
-    else:
-        return os.path.normpath(os.path.join(dirname, basename + extname))
+    if "." in basename:
+        basename = basename.split(".")[0]
+        if not os.path.exists(os.path.join(dirname, basename + extname)):
+            return False
+    return os.path.normpath(os.path.join(dirname, basename + extname))
 
 
 def examples2code(example_file):
