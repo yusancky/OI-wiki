@@ -28,8 +28,8 @@ def examples2code(example_file):
     code_files = []
     for extname in extnames:
         code_file = os.path.normpath(os.path.join(code_dir, basename + extname))
-        if check_availability(code_file):
-            code_files.append(check_availability(code_file))
+        if available_file := check_availability(code_file):
+            code_files.append(available_file)
     return code_files
 
 
