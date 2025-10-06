@@ -4,15 +4,16 @@ extnames = [".cpp", ".py"]
 
 
 def check_availability(file):
+    if not os.path.exists(file):
+        return False
     dirname = os.path.dirname(file)
     if dirname.split("/")[-1] in ["images"]:
         return False
-    basename = os.path.splitext(os.path.basename(file))[0]
-    extname = os.path.splitext(os.path.basename(file))[1]
+    basename, extname = os.path.splitext(os.path.basename(file))
     if "." in basename:
         basename = basename.split(".")[0]
-        if os.path.exists(os.path.join(dirname, basename + extname)):
-            return os.path.normpath(os.path.join(dirname, basename + extname))
+        if not os.path.exists(os.path.join(dirname, basename + extname)):
+            return False
     skip_file = os.path.join(dirname, basename + ".skip_test")
     if os.path.exists(skip_file):
         return False
@@ -27,7 +28,7 @@ def examples2code(example_file):
     code_files = []
     for extname in extnames:
         code_file = os.path.normpath(os.path.join(code_dir, basename + extname))
-        if os.path.exists(code_file) and check_availability(code_file):
+        if check_availability(code_file):
             code_files.append(check_availability(code_file))
     return code_files
 
