@@ -11,11 +11,13 @@ def check_availability(file):
         return False
     basename, extname = os.path.splitext(os.path.basename(file))
     if "." in basename:
-        basename = basename.split(".")[0]
-        if not os.path.exists(os.path.join(dirname, basename + extname)):
+        if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
             return False
-    skip_file = os.path.join(dirname, basename + ".skip_test")
-    if os.path.exists(skip_file):
+        else:
+            basename = basename.split(".")[0]
+            if not os.path.exists(os.path.join(dirname, basename + extname)):
+                return False
+    if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
         return False
     else:
         return os.path.normpath(os.path.join(dirname, basename + extname))
