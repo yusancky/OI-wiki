@@ -10,12 +10,12 @@ def check_availability(file):
     if "code" not in dirname.split("/"):
         return False
     basename, extname = os.path.splitext(os.path.basename(file))
-    if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
-        return False
     if "." in basename:
         basename = basename.split(".")[0]
         if not os.path.exists(os.path.join(dirname, basename + extname)):
             return False
+    if os.path.exists(os.path.join(dirname, basename + ".skip_test")):
+        return False
     return os.path.normpath(os.path.join(dirname, basename + extname))
 
 
