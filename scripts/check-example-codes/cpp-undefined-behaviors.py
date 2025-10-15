@@ -4,12 +4,75 @@ from utils import *
 
 CALL_VCVARS_BAT = r'call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
 
+COMMON_STANDARDS = [
+    ("-std=c++14", ".CPP14"),
+    ("-std=c++17", ".CPP17"),
+    ("-std=c++2a", ".CPP20"),
+]
+
+COMMON_OPTIMIZATIONS = [
+    ("-O0", ".O0"),
+    ("-O2", ".O2"),
+    ("-O3", ".O3"),
+]
+
+COMMON_SANITIZERS = [("", ".NA")]
+
+MSVC_COMPILER = [
+    (
+        f"{CALL_VCVARS_BAT} && cl.exe /EHsc /D_CRT_SECURE_NO_WARNINGS",
+        ".MSVC",
+    )
+]
+
+PLATFORM_CONFIGS = {
+    "x86_64 Ubuntu": {
+        "compilers1": [
+            ("clang++ -Wno-unused-result", ".Clang"),
+            ("g++-9 -Wno-unused-result", ".GCC9"),
+            ("g++-13 -Wno-unused-result", ".GCC13"),
+        ],
+        "compilers2": [
+            ("clang++ -Wno-unused-result", ".Clang"),
+            ("g++-13 -Wno-unused-result", ".GCC13"),
+        ],
+        "sanitizers2": [("-fsanitize=undefined,address", ".UBSAN-ASAN")],
+    },
+    "x86_64 Alpine": {
+        "compilers1": [
+            ("clang++ -Wno-unused-result", ".Clang"),
+            ("g++ -Wno-unused-result", ".GCC"),
+        ],
+    },
+    "x86_64 Windows": {
+        "compilers1": [
+            ("clang++ -Wno-unused-result -D_CRT_SECURE_NO_WARNINGS", ".Clang"),
+            ("g++ -Wno-unused-result -D_CRT_SECURE_NO_WARNINGS", ".GCC"),
+        ],
+        "compilers2": MSVC_COMPILER,
+    },
+    "riscv64 Ubuntu": {
+        "compilers1": [
+            ("clang++ -Wno-unused-result", ".Clang"),
+            ("g++ -Wno-unused-result", ".GCC"),
+        ],
+    },
+    "arm64 MacOS": {
+        "compilers1": [
+            ("clang++ -Wno-unused-result", ".Clang"),
+            ("g++-13 -Wno-unused-result", ".GCC13"),
+        ],
+    },
+}
+
+# ============================================================
+
 
 def format_error(error_str):
     return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
 
 
-def ub_check(test_file):
+def ub_check(test_file, runs_on):
     print(incolor(BLUE, f"Test for {test_file}..."))
     auxfiles = get_auxfiles(test_file)
 
@@ -22,10 +85,7 @@ def ub_check(test_file):
         test_file,
         omit_ms_style=False,
     ):
-        assert compilers is not None and compilers != []
-        assert standards is not None and standards != []
-        assert optimizations is not None and optimizations != []
-        assert sanitizers is not None and sanitizers != []
+        assert compilers and standards and optimizations and sanitizers
 
         def arrgen():
             flag = "-o " if not omit_ms_style else "/Fe:"
@@ -49,144 +109,76 @@ def ub_check(test_file):
         return (arrgen(), productgen())
 
     concat = lambda a, b: (a[0] + b[0], a[1] + b[1])
-    config_map = {
-        "x86_64 Ubuntu": concat(
-            gen(
-                compilers=[
-                    ("clang++ -Wno-unused-result", ".Clang"),
-                    ("g++-9 -Wno-unused-result", ".GCC9"),
-                    ("g++-13 -Wno-unused-result", ".GCC13"),
-                ],
-                standards=[
-                    ("-std=c++14", ".CPP14"),
-                    ("-std=c++17", ".CPP17"),
-                    ("-std=c++2a", ".CPP20"),
-                ],
-                optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
-                sanitizers=[("", ".NA")],
-                auxfiles=auxfiles,
-                test_file=test_file,
-            ),
-            gen(
-                compilers=[
-                    ("clang++ -Wno-unused-result", ".Clang"),
-                    ("g++-13 -Wno-unused-result", ".GCC13"),
-                ],
-                standards=[
-                    ("-std=c++14", ".CPP14"),
-                    ("-std=c++17", ".CPP17"),
-                    ("-std=c++2a", ".CPP20"),
-                ],
-                optimizations=[("", ".NA")],
-                sanitizers=[("-fsanitize=undefined,address", ".UBSAN-ASAN")],
-                auxfiles=auxfiles,
-                test_file=test_file,
-            ),
-        ),
-        "x86_64 Alpine": gen(
-            compilers=[
-                ("clang++ -Wno-unused-result", ".Clang"),
-                ("g++ -Wno-unused-result", ".GCC"),
-            ],
-            standards=[
-                ("-std=c++14", ".CPP14"),
-                ("-std=c++17", ".CPP17"),
-                ("-std=c++2a", ".CPP20"),
-            ],
-            optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
-            sanitizers=[("", ".NA")],
-            auxfiles=auxfiles,
-            test_file=test_file,
-        ),
-        "x86_64 Windows": concat(
-            gen(
-                compilers=[
-                    ("clang++ -Wno-unused-result -D_CRT_SECURE_NO_WARNINGS", ".Clang"),
-                    ("g++ -Wno-unused-result -D_CRT_SECURE_NO_WARNINGS", ".GCC"),
-                ],
-                standards=[
-                    ("-std=c++14", ".CPP14"),
-                    ("-std=c++17", ".CPP17"),
-                    ("-std=c++2a", ".CPP20"),
-                ],
-                optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
-                sanitizers=[("", ".NA")],
-                auxfiles=auxfiles,
-                test_file=test_file,
-            ),
-            gen(
-                compilers=[
-                    (
-                        f"{CALL_VCVARS_BAT} && cl.exe /EHsc /D_CRT_SECURE_NO_WARNINGS",
-                        ".MSVC",
-                    )
-                ],
-                standards=[
-                    ("/std:c++14", ".CPP14"),
-                    ("/std:c++17", ".CPP17"),
-                    ("/std:c++20", ".CPP20"),
-                ],
-                optimizations=[("/Od", ".O0"), ("/O2", ".O2")],
-                sanitizers=[("", ".NA")],
-                auxfiles=auxfiles,
-                test_file=test_file,
-                omit_ms_style=True,
-            ),
-        ),
-        "riscv64 Ubuntu": gen(
-            compilers=[
-                ("clang++ -Wno-unused-result", ".Clang"),
-                ("g++ -Wno-unused-result", ".GCC"),
-            ],
-            standards=[
-                ("-std=c++14", ".CPP14"),
-                ("-std=c++17", ".CPP17"),
-                ("-std=c++2a", ".CPP20"),
-            ],
-            optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
-            sanitizers=[("", ".NA")],
-            auxfiles=auxfiles,
-            test_file=test_file,
-        ),
-        "arm64 MacOS": gen(
-            compilers=[
-                ("clang++ -Wno-unused-result", ".Clang"),
-                ("g++-13 -Wno-unused-result", ".GCC13"),
-            ],
-            standards=[
-                ("-std=c++14", ".CPP14"),
-                ("-std=c++17", ".CPP17"),
-                ("-std=c++2a", ".CPP20"),
-            ],
-            optimizations=[("-O0", ".O0"), ("-O2", ".O2"), ("-O3", ".O3")],
-            sanitizers=[("", ".NA")],
-            auxfiles=auxfiles,
-            test_file=test_file,
-        ),
-    }
 
-    compile_commands = {
-        "x86_64 Ubuntu": config_map["x86_64 Ubuntu"][0],
-        "x86_64 Alpine": config_map["x86_64 Alpine"][0],
-        "x86_64 Windows": config_map["x86_64 Windows"][0],
-        "riscv64 Ubuntu": config_map["riscv64 Ubuntu"][0],
-        "arm64 MacOS": config_map["arm64 MacOS"][0],
-    }[runs_on]
+    # Generate configuration map dynamically using PLATFORM_CONFIGS
+    config_map = {}
+    for platform, cfg in PLATFORM_CONFIGS.items():
+        if platform == "x86_64 Ubuntu":
+            config_map[platform] = concat(
+                gen(
+                    cfg["compilers1"],
+                    COMMON_STANDARDS,
+                    COMMON_OPTIMIZATIONS,
+                    auxfiles,
+                    COMMON_SANITIZERS,
+                    test_file,
+                ),
+                gen(
+                    cfg["compilers2"],
+                    COMMON_STANDARDS,
+                    [("", ".NA")],
+                    auxfiles,
+                    cfg["sanitizers2"],
+                    test_file,
+                ),
+            )
+        elif platform == "x86_64 Windows":
+            config_map[platform] = concat(
+                gen(
+                    cfg["compilers1"],
+                    COMMON_STANDARDS,
+                    COMMON_OPTIMIZATIONS,
+                    auxfiles,
+                    COMMON_SANITIZERS,
+                    test_file,
+                ),
+                gen(
+                    cfg["compilers2"],
+                    [
+                        ("/std:c++14", ".CPP14"),
+                        ("/std:c++17", ".CPP17"),
+                        ("/std:c++20", ".CPP20"),
+                    ],
+                    [("/Od", ".O0"), ("/O2", ".O2")],
+                    auxfiles,
+                    COMMON_SANITIZERS,
+                    test_file,
+                    omit_ms_style=True,
+                ),
+            )
+        else:
+            config_map[platform] = gen(
+                cfg["compilers1"],
+                COMMON_STANDARDS,
+                COMMON_OPTIMIZATIONS,
+                auxfiles,
+                COMMON_SANITIZERS,
+                test_file,
+            )
 
-    compile_products = {
-        "x86_64 Ubuntu": config_map["x86_64 Ubuntu"][1],
-        "x86_64 Alpine": config_map["x86_64 Alpine"][1],
-        "x86_64 Windows": config_map["x86_64 Windows"][1],
-        "riscv64 Ubuntu": config_map["riscv64 Ubuntu"][1],
-        "arm64 MacOS": config_map["arm64 MacOS"][1],
-    }[runs_on]
+    if runs_on not in config_map:
+        raise ValueError(f"Unsupported platform: {runs_on}")
+
+    compile_commands, compile_products = config_map[runs_on]
 
     return_status = {}
     this_file_looks_odd = False
+
     for compile_command, compile_product in zip(compile_commands, compile_products):
         printbuffer = compile_command + " "
         fold_this_run = True
         status_vector = []
+
         result = subprocess.run(compile_command, shell=True, capture_output=True)
         if result.returncode != 0:
             this_file_looks_odd = True
@@ -247,6 +239,7 @@ def ub_check(test_file):
                     printbuffer += format_error(open(ans_file).read())
                     printbuffer += "  ---- We get: ----\n"
                     printbuffer += format_error(open(out_file).read())
+
         printbuffer += f"{compile_product.split(os.path.pathsep)[-1]}: "
         for status in status_vector:
             printbuffer += incolor(STATUS_COLOR(status), status) + "; "
@@ -263,6 +256,7 @@ def ub_check(test_file):
                 + incolor(BLUE, f"With config: {compile_product.split('/')[-1]}...")
             )
             print(printbuffer, flush=True)
+
         return_status[compile_product] = status_vector
 
     if this_file_looks_odd:
@@ -278,10 +272,12 @@ if __name__ == "__main__":
     cnts = [0, 0]
     output = {}
     for test_file in test_files:
-        this_file_looks_odd, return_status = ub_check(test_file)
-        output_status = {}
-        for key in return_status:
-            output_status[key] = [str(i) for i in return_status[key]]
+        if not test_file.strip():
+            continue
+        this_file_looks_odd, return_status = ub_check(test_file, runs_on)
+        output_status = {
+            key: [str(i) for i in val] for key, val in return_status.items()
+        }
         output[test_file] = output_status
         cnts[int(this_file_looks_odd)] += 1
     with open("output.txt", "w") as f:
