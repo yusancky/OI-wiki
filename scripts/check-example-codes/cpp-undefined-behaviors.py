@@ -163,10 +163,7 @@ def ub_check(test_file, runs_on):
                 test_file,
             )
 
-    if runs_on not in config_map:
-        raise ValueError(f"Unsupported platform: {runs_on}")
     compile_commands, compile_products = config_map[runs_on]
-
     return_status = {}
     this_file_looks_odd = False
     for compile_command, compile_product in zip(compile_commands, compile_products):
@@ -253,7 +250,6 @@ def ub_check(test_file, runs_on):
             print(printbuffer, flush=True)
 
         return_status[compile_product] = status_vector
-
     if this_file_looks_odd:
         print(
             f"::error file={test_file},title=Potential UB::Potential UB. Please take a look."
