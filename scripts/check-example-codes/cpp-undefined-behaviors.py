@@ -230,7 +230,7 @@ def ub_check(test_file, runs_on):
                     incolor(STATUS_COLOR(status_vector[-1]), status_vector[-1]) + "\n"
                 )
                 if result.returncode != 0:
-                    printbuffer += "  ---- We expect: ----"
+                    printbuffer += "  ---- We expect: ----\n"
                     printbuffer += format_error(open(ans_file).read())
                     printbuffer += "  ---- We get: ----\n"
                     printbuffer += format_error(open(out_file).read())
