@@ -65,8 +65,6 @@ PLATFORM_CONFIGS = {
     },
 }
 
-# ============================================================
-
 
 def format_error(error_str):
     return "\n".join("  " + line for line in error_str.split("\n")) + "\n"
@@ -110,7 +108,6 @@ def ub_check(test_file, runs_on):
 
     concat = lambda a, b: (a[0] + b[0], a[1] + b[1])
 
-    # Generate configuration map dynamically using PLATFORM_CONFIGS
     config_map = {}
     for platform, cfg in PLATFORM_CONFIGS.items():
         if platform == "x86_64 Ubuntu":
