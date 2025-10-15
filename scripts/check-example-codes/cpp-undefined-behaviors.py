@@ -165,12 +165,10 @@ def ub_check(test_file, runs_on):
 
     if runs_on not in config_map:
         raise ValueError(f"Unsupported platform: {runs_on}")
-
     compile_commands, compile_products = config_map[runs_on]
 
     return_status = {}
     this_file_looks_odd = False
-
     for compile_command, compile_product in zip(compile_commands, compile_products):
         printbuffer = compile_command + " "
         fold_this_run = True
@@ -232,7 +230,7 @@ def ub_check(test_file, runs_on):
                     incolor(STATUS_COLOR(status_vector[-1]), status_vector[-1]) + "\n"
                 )
                 if result.returncode != 0:
-                    printbuffer += "  ---- We expect: ----\n"
+                    printbuffer += "  ---- We expect: ----"
                     printbuffer += format_error(open(ans_file).read())
                     printbuffer += "  ---- We get: ----\n"
                     printbuffer += format_error(open(out_file).read())
