@@ -139,7 +139,7 @@ jobs:
             container: alpine:latest
             setup: |
               echo "::group::Install Python, GCC and Clang"
-              apk add build-base python3 llvm clang
+              apk add build-base python3 llvm clang # 这个 Python 能不能不安装？
               echo "::endgroup::"
               echo "::group::Check g++ Version"
               g++ --version
@@ -157,8 +157,12 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14'
-      - name: Setup Environment
-        shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
+      - name: Setup Environment (Ubuntu/macOS)
+        if: runner.os != 'Windows'
+        run: ${{ matrix.setup }}
+      - name: Setup Environment (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
         run: ${{ matrix.setup }}
       - name: Run Undefined Behavior Check
         run: ${{ matrix.run || 'python scripts/check-example-codes/cpp-undefined-behaviors.py' }}
