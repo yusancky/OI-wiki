@@ -158,7 +158,7 @@ jobs:
         with:
           python-version: '3.14'
       - name: Setup Environment
-        shell: ${{ startsWith(matrix.os, 'windows') && 'powershell' || 'bash' }}
+        shell: ${{ runner.os == 'Windows' && 'powershell' || 'bash' }}
         run: ${{ matrix.setup }}
       - name: Run Undefined Behavior Check
         run: ${{ matrix.run || 'python scripts/check-example-codes/cpp-undefined-behaviors.py' }}
