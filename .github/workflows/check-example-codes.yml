@@ -147,7 +147,6 @@ jobs:
               echo "::group::Check Clang Version"
               clang --version
               echo "::endgroup::"
-            run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container || '' }}
     steps:
@@ -166,7 +165,7 @@ jobs:
         shell: cmd
         run: ${{ matrix.setup }}
       - name: Run Undefined Behavior Check
-        run: ${{ matrix.run || 'python scripts/check-example-codes/cpp-undefined-behaviors.py' }}
+        run: ${{ matrix.run || 'python3 scripts/check-example-codes/cpp-undefined-behaviors.py' }}
         env:
           TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
           RUNS_ON: ${{ matrix.name }}
