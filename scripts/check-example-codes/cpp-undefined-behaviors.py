@@ -57,7 +57,7 @@ PLATFORM_CONFIGS = {
             ("g++ -Wno-unused-result", ".GCC"),
         ],
     },
-    "arm64 MacOS": {
+    "arm64 macOS": {
         "compilers1": [
             ("clang++ -Wno-unused-result", ".Clang"),
             ("g++-13 -Wno-unused-result", ".GCC13"),
