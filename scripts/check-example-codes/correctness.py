@@ -16,7 +16,7 @@ def run_test_cpp(test_file):
         print(
             f"::error file={test_file},title=编译错误::编译错误（错误码：{result.returncode}）\n::endgroup::"
         )
-        return 1, f"❌ `{test_file}` 编译错误（错误码；{result.returncode}）"
+        return 1, f"❌ `{test_file}` 编译错误（错误码：{result.returncode}）"
     print(incolor(GREEN, "OK"))
 
     in_file, out_file, ans_file = get_examples(test_file)
