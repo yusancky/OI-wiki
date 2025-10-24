@@ -60,155 +60,113 @@ jobs:
           TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
         run: python scripts/check-example-codes/correctness.py -language cpp
 
-  cpp-undefined-behaviors-ubuntu:
-    name: C++ UB Check (x86_64 Ubuntu)
+  cpp-undefined-behaviors:
+    name: C++ UB Check (${{ matrix.name }})
     needs: [file-lists, cpp-correctness]
-    runs-on: ubuntu-latest
-    container: ghcr.io/trickeye/ubuntu_gcc1x:clang
-    outputs:
-      output: ${{ steps.set-output.outputs.output }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - name: Install g++-9
-        run: |
-          apt-get update
-          apt-get install -y g++-9
-      - name: Undefined Behaviors Check
-        env: 
-          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
-          RUNS_ON: x86_64 Ubuntu
-          PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x86_64 Ubuntu
+            os: ubuntu-latest
+            container: ghcr.io/trickeye/ubuntu_gcc1x:clang
+            setup: |
+              apt-get update
+              apt-get install -y g++-9
+              echo "::group::Check G++ Version"
+              g++-9 --version
+              echo "::endgroup::"
+              echo "::group::Check Clang Version"
+              clang --version
+              echo "::endgroup::"
+              echo "::group::Check Python Version"
+              python3 --version
+              echo "::endgroup::"
+            run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
-  cpp-undefined-behaviors-macos:
-    name: C++ UB Check (Arm64 macOS)
-    needs: [file-lists, cpp-correctness]
-    runs-on: macos-latest
-    outputs:
-      output: ${{ steps.set-output.outputs.output }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - name: Check Compiler Version
-        run: |
-          echo "::group::Check G++ Version"
-          g++-14 --version
-          echo "::endgroup::"
-          echo "::group::Check Clang Version"
-          clang --version
-          echo "::endgroup::"
-      - name: Undefined Behaviors Check
-        env: 
-          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
-          RUNS_ON: arm64 MacOS
-          PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
+          - name: arm64 macOS
+            os: macos-latest
+            setup: |
+              echo "::group::Check G++ Version"
+              g++-14 --version
+              echo "::endgroup::"
+              echo "::group::Check Clang Version"
+              clang --version
+              echo "::endgroup::"
+            run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
-  cpp-undefined-behaviors-rv:
-    name: C++ UB Check (RISC-V Ubuntu)
-    needs: [file-lists, cpp-correctness]
-    runs-on: ubuntu-latest
-    outputs:
-      output: ${{ steps.set-output.outputs.output }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - name: Launch Risc-V Docker
-        run: |
-          docker pull --platform riscv64 ghcr.io/trickeye/ubtest:latest
-          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-          docker run -d --name ubtest --platform riscv64 \
-            --volume $PWD:$PWD \
-            --volume $GITHUB_STEP_SUMMARY:$GITHUB_STEP_SUMMARY \
-            --workdir $PWD \
-            --env TEST_CPP_FILES="${{ needs.file-lists.outputs.TEST_CPP_FILES }}" \
-            --env RUNS_ON="riscv64 Ubuntu" \
-            --env PYTHONIOENCODING="UTF-8" \
-            --env GITHUB_STEP_SUMMARY=$GITHUB_STEP_SUMMARY \
-            ghcr.io/trickeye/ubtest:latest sleep infinity
-          docker exec ubtest uname -a
-      - name: Check Compiler Version
-        run: |
-          echo "::group::gcc --version"
-          docker exec ubtest gcc --version
-          echo "::endgroup::"
-          echo "::group::g++ --version"
-          docker exec ubtest g++ --version
-          echo "::endgroup::"
-          echo "::group::clang --version"
-          docker exec ubtest clang++ --version
-          echo "::endgroup::"
-      - name: Undefined Behaviors Check
-        # The environment variables are set in Launch Risc-V Docker step
-        run: docker exec ubtest python3 scripts/check-example-codes/cpp-undefined-behaviors.py
+          - name: riscv64 Ubuntu
+            os: ubuntu-latest
+            setup: |
+              echo "::group::Launch RISC-V Docker"
+              docker pull --platform riscv64 ghcr.io/trickeye/ubtest:latest
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker run -d --name ubtest --platform riscv64 \
+                --volume $PWD:$PWD \
+                --workdir $PWD \
+                --env TEST_CPP_FILES="${{ needs.file-lists.outputs.TEST_CPP_FILES }}" \
+                --env RUNS_ON="riscv64 Ubuntu" \
+                --env PYTHONIOENCODING="UTF-8" \
+                ghcr.io/trickeye/ubtest:latest sleep infinity
+              docker exec ubtest uname -a
+              echo "::endgroup::"
+              echo "::group::Check Compiler Versions"
+              docker exec ubtest gcc --version
+              docker exec ubtest g++ --version
+              docker exec ubtest clang++ --version
+              echo "::endgroup::"
+            run: docker exec ubtest python3 scripts/check-example-codes/cpp-undefined-behaviors.py
 
-  cpp-undefined-behaviors-windows:
-    name: C++ UB Check (x86_64 Windows)
-    needs: [file-lists, cpp-correctness]
-    runs-on: windows-2025
-    outputs:
-      output: ${{ steps.set-output.outputs.output }}
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-      - name: Check Compiler Version
-        shell: cmd
-        run: |
-          echo ::group::Install Clang, MinGW
-          choco install -y llvm mingw
-          echo ::endgroup::
-          echo ::group::Check Clang Version
-          clang --version
-          echo ::endgroup::
-          echo ::group::Check G++ Version
-          g++ --version
-          echo ::endgroup::
-          echo ::group::Check MSVC Version
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cl.exe
-          echo ::endgroup::
-      - name: Undefined Behaviors Check
-        env: 
-          TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
-          RUNS_ON: x86_64 Windows
-          PYTHONIOENCODING: UTF-8
-        run: |
-          chcp 65001
-          python scripts/check-example-codes/cpp-undefined-behaviors.py
+          - name: x86_64 Windows
+            os: windows-2025
+            shell: cmd
+            setup: |
+              echo ::group::Install Clang and MinGW
+              choco install -y llvm mingw
+              echo ::endgroup::
+              echo ::group::Check Clang Version
+              clang --version
+              echo ::endgroup::
+              echo ::group::Check G++ Version
+              g++ --version
+              echo ::endgroup::
+              echo ::group::Check MSVC Version
+              call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+              cl.exe
+              echo ::endgroup::
+            run: |
+              chcp 65001
+              python scripts/check-example-codes/cpp-undefined-behaviors.py
 
-  cpp-undefined-behaviors-alpine:
-    name: C++ UB Check (x86_64 Alpine)
-    needs: [file-lists, cpp-correctness]
-    runs-on: ubuntu-latest
-    outputs:
-      output: ${{ steps.set-output.outputs.output }}
-    container: alpine:latest
+          - name: x86_64 Alpine
+            os: ubuntu-latest
+            container: alpine:latest
+            setup: |
+              echo "::group::Install Python, GCC, Clang"
+              apk add build-base python3 llvm clang
+              echo "::endgroup::"
+              echo "::group::Check G++ Version"
+              g++ --version
+              echo "::endgroup::"
+              echo "::group::Check Clang Version"
+              clang --version
+              echo "::endgroup::"
+            run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
+
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || '' }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - name: Check Compiler Version
-        run: |
-          echo "::group::Install Python, GCC, Clang"
-          apk add build-base python3 llvm clang
-          echo "::endgroup::"
-          echo "::group::Check G++ Version"
-          g++ --version
-          echo "::endgroup::"
-          echo "::group::Check Clang Version"
-          clang --version
-          echo "::endgroup::"
-      - name: Undefined Behaviors Check
-        env: 
+      - name: Setup Environment
+        run: ${{ matrix.setup }}
+      - name: Run Undefined Behavior Check
+        env:
           TEST_CPP_FILES: ${{ needs.file-lists.outputs.TEST_CPP_FILES }}
-          RUNS_ON: x86_64 Alpine
+          RUNS_ON: ${{ matrix.name }}
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/check-example-codes/cpp-undefined-behaviors.py
+        run: ${{ matrix.run }}
 
   py-correctness:
     name: Offline Python Test
