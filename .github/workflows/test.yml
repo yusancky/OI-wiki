@@ -50,12 +50,12 @@ jobs:
       - name: Get Files to Test
         if: steps.changed-files.outputs.any_changed == 'true'
         id: GetFiles
-        run: uv run python scripts/get_files_to_test.py
+        run: uv run python scripts/test/file-lists.py
       - name: Correctness Check
         if: steps.changed-files.outputs.any_changed == 'true'
         env: 
           FILES_TO_TEST: ${{ steps.GetFiles.outputs.files_to_test }}
-        run: uv run python scripts/correctness_check.py
+        run: uv run python scripts/test/correctness.py
 
   undefinedbehaviors-ubuntu:
     name: UB Check - x86_64 Ubuntu
@@ -78,7 +78,7 @@ jobs:
           FILES_TO_TEST: ${{ needs.correctness.outputs.files_to_test }}
           RUNS_ON: x86_64 Ubuntu
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/ub-check.py
+        run: python3 scripts/test/cpp-ub.py
 
   undefinedbehaviors-macos:
     name: UB Check - Arm64 MacOS
@@ -104,7 +104,7 @@ jobs:
           FILES_TO_TEST: ${{ needs.correctness.outputs.files_to_test }}
           RUNS_ON: arm64 MacOS
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/ub-check.py
+        run: python3 scripts/test/cpp-ub.py
 
   undefinedbehaviors-rv:
     name: UB Check - RISC-V Ubuntu
@@ -144,7 +144,7 @@ jobs:
           echo "::endgroup::"
       - name: Undefined Behaviors Check
         # The environment variables are set in Launch Risc-V Docker step
-        run: docker exec ubtest python3 scripts/ub-check.py
+        run: docker exec ubtest python3 scripts/test/cpp-ub.py
 
   undefinedbehaviors-windows:
     name: UB Check - x86_64 Windows
@@ -180,7 +180,7 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: |
           chcp 65001
-          python scripts/ub-check.py
+          python scripts/test/cpp-ub.py
 
 
   undefinedbehaviors-alpine:
@@ -211,4 +211,4 @@ jobs:
           FILES_TO_TEST: ${{ needs.correctness.outputs.files_to_test }}
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
-        run: python3 scripts/ub-check.py
+        run: python3 scripts/test/cpp-ub.py
