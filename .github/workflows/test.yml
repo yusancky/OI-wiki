@@ -44,6 +44,7 @@ jobs:
     needs: file-list
     if: ${{ needs.file-list.outputs.any_changed == 'true' }}
     runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
@@ -61,7 +62,7 @@ jobs:
 
   undefinedbehaviors-ubuntu:
     name: UB Check - x86_64 Ubuntu
-    needs: correctness
+    needs: [file-list, correctness]
     runs-on: ubuntu-latest
     container: ghcr.io/trickeye/ubuntu_gcc1x:clang
     outputs:
@@ -83,7 +84,7 @@ jobs:
 
   undefinedbehaviors-macos:
     name: UB Check - Arm64 MacOS
-    needs: correctness
+    needs: [file-list, correctness]
     runs-on: macos-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -108,7 +109,7 @@ jobs:
 
   undefinedbehaviors-rv:
     name: UB Check - RISC-V Ubuntu
-    needs: correctness
+    needs: [file-list, correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -147,7 +148,7 @@ jobs:
 
   undefinedbehaviors-windows:
     name: UB Check - x86_64 Windows
-    needs: correctness
+    needs: [file-list, correctness]
     runs-on: windows-2025
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -183,7 +184,7 @@ jobs:
 
   undefinedbehaviors-alpine:
     name: UB Check - x86_64 Alpine
-    needs: correctness
+    needs: [file-list, correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
