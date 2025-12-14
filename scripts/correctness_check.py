@@ -66,13 +66,13 @@ def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
         return SKIPPED, summary
 
     # 检测文件存在
-    for file in auxfile:
+    for file in auxfiles:
         if not os.path.exists(file):
             print(f"::endgroup::")
             print(f"::error file={file},title=file {file} not found::")
             summary += f"## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n"
             return ERROR, summary
-    for file in example:
+    for file in examples:
         if not os.path.exists(file):
             print(f"::endgroup::")
             print(f"::error file={file},title=file {file} not found::")
