@@ -2,7 +2,52 @@ import os
 import subprocess
 from dataclasses import dataclass
 
-mainfiles, auxfiles, examples, skiptests = eval(os.environ.get("FILES_TO_TEST"))
+
+def derive_test_files(mainfile):
+    """
+    Derive auxfiles, examples, and skiptest status from mainfile.
+    
+    Args:
+        mainfile: Path to the main source code file
+        
+    Returns:
+        tuple: (auxfiles, examples, skiptest)
+            auxfiles: List of all .cpp files with same basename (including mainfile)
+            examples: List of .in files that have corresponding .ans files
+            skiptest: Boolean indicating if .skip_test file exists
+    """
+    dirname = os.path.dirname(mainfile)
+    basename = os.path.splitext(os.path.basename(mainfile))[0]
+    
+    # Find all auxiliary files (all .cpp files with same basename)
+    auxfiles = []
+    for root, _, files in os.walk(dirname):
+        for file in files:
+            if file.split(".")[0] == basename and file.endswith(".cpp"):
+                auxfiles.append(os.path.normpath(os.path.join(root, file)))
+    
+    # Find example test cases in corresponding examples directory
+    examples = []
+    examples_dir = dirname.replace("/code/", "/examples/")
+    if os.path.exists(examples_dir):
+        for root, _, files in os.walk(examples_dir):
+            for file in files:
+                if (
+                    file.split(".")[0] == basename
+                    and file.endswith(".in")
+                    and os.path.exists(os.path.join(root, file.replace(".in", ".ans")))
+                ):
+                    examples.append(os.path.normpath(os.path.join(root, file)))
+    
+    # Check if test should be skipped
+    skiptest = os.path.exists(os.path.join(dirname, basename + ".skip_test"))
+    
+    return auxfiles, examples, skiptest
+
+
+# Get mainfiles from environment variable (space-separated list)
+mainfiles_str = os.environ.get("FILES_TO_TEST", "")
+mainfiles = mainfiles_str.split() if mainfiles_str else []
 runs_on = os.environ.get("RUNS_ON")
 
 RED = "\033[0;31m"
@@ -462,10 +507,11 @@ def ub_check(mainfile, auxfiles, examples, skiptest):
 
 cnt_ac, cnt_error = 0, 0
 output = {}
-for mainfile, auxfile, example, skiptest in zip(
-    mainfiles, auxfiles, examples, skiptests
-):
-    this_file_looks_odd, return_status = ub_check(mainfile, auxfile, example, skiptest)
+for mainfile in mainfiles:
+    # Derive auxfiles, examples, and skiptest from mainfile
+    auxfiles, examples, skiptest = derive_test_files(mainfile)
+    
+    this_file_looks_odd, return_status = ub_check(mainfile, auxfiles, examples, skiptest)
     output_status = {}
     for key in return_status:
         output_status[key] = [str(_) for _ in return_status[key]]
