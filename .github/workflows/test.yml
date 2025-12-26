@@ -15,6 +15,7 @@ jobs:
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
       TEST_CPP_FILES: ${{ steps.GetFiles.outputs.TEST_CPP_FILES }}
+      TEST_PY_FILES: ${{ steps.GetFiles.outputs.TEST_PY_FILES }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -25,6 +26,7 @@ jobs:
         with:
           files: |
             docs/**/*.cpp
+            docs/**/*.py
             docs/**/*.in
             docs/**/*.ans
       - uses: actions/setup-python@v6
