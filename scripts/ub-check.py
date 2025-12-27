@@ -2,8 +2,8 @@ import os
 import subprocess
 from dataclasses import dataclass
 from correctness_check import (
-    derive_test_files,
-)  # Derive auxfiles, examples, and skiptest status from mainfile
+    derive_cpp_test_files,
+)
 
 # Get mainfiles from environment variable (space-separated list)
 mainfiles_str = os.environ.get("FILES_TO_TEST", "")
@@ -469,7 +469,7 @@ cnt_ac, cnt_error = 0, 0
 output = {}
 for mainfile in mainfiles:
     # Derive auxfiles, examples, and skiptest from mainfile
-    auxfiles, examples, skiptest = derive_test_files(mainfile)
+    auxfiles, examples, skiptest = derive_cpp_test_files(mainfile)
 
     this_file_looks_odd, return_status = ub_check(
         mainfile, auxfiles, examples, skiptest
