@@ -223,7 +223,7 @@ def test_py(mainfile, examples, skiptest, summary):
 
 # Get language to test from argument
 parser = argparse.ArgumentParser()
-parser.add_argument("-language", type=str, required=True, choices=["cpp", "py"])
+parser.add_argument("--language", type=str, required=True, choices=["cpp", "py"])
 language = parser.parse_args().language
 
 # Get mainfiles from environment variable (space-separated list)
