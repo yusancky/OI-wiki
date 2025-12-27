@@ -6,7 +6,7 @@ def dp(n, m, a, b):
             if a[i] == b[j]:
                 f[i][j] = f[i - 1][j - 1] + 1
             else:
-                f[i][j] = max(f[i - 1][j], f[i][j - 1])
+                f[i][j] = max(f[i][j - 1], f[i - 1][j])
     return f[n][m]
 
 
