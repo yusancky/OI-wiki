@@ -5,6 +5,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 ACCEPTED = 1
 ERROR = 0
@@ -84,7 +85,9 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
             return ERROR, summary
 
     # 编译
-    compile_command = f'g++ -std=c++17 {" ".join(auxfiles)} -o {mainfile.split(".")[0]}'
+    compile_command = (
+        f'g++ -std=c++17 {" ".join(auxfiles)} -o {os.path.splitext(mainfile)[0]}'
+    )
     print(compile_command, end=" ")
 
     result = subprocess.run(compile_command, shell=True)
@@ -109,14 +112,15 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
 
     # 逐个测试
     executable = mainfile.split(".")[0]
-    check_command = (
-        f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}'
-        for e in examples
-    )
-    for check, e in zip(check_command, examples):
-        print(f'{executable} < {e} > {e.replace(".in", ".out")}', end=" ")
-        with open(e, "r") as fstdin:
-            with open(e.replace(".in", ".out"), "w") as fstdout:
+    for e in examples:
+        in_file = e
+        out_file = e.replace(".in", ".out")
+        ans_file = e.replace(".in", ".ans")
+        check_command = f"diff -b -B {out_file} {ans_file}"
+
+        print(f"{executable} < {in_file} > {out_file}", end=" ")
+        with open(in_file, "r") as fstdin:
+            with open(out_file, "w") as fstdout:
                 result = subprocess.run(
                     executable, shell=True, stdin=fstdin, stdout=fstdout
                 )
@@ -125,17 +129,17 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
             print(
                 f"::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}"
             )
-            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
+            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{in_file}\n- **错误代码**：{result.returncode}\n\n'
             return ERROR, summary
         else:
             print("OK")
 
-        print(check, end=" ")
-        result = subprocess.run(check, shell=True, stdout=subprocess.DEVNULL)
+        print(check_command, end=" ")
+        result = subprocess.run(check_command, shell=True, stdout=subprocess.DEVNULL)
         if result.returncode != 0:
             print(f"\n::endgroup::")
-            print(f"::error file={e},title=WA!::Wrong Answer on: {e}")
-            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n\n期望得到：\n```\n{open(e.replace(".in", ".ans")).read()}\n```\n但得到输出：\n```\n{open(e.replace(".in", ".out")).read()}\n```\n\n'
+            print(f"::error file={in_file},title=WA!::Wrong Answer on: {in_file}")
+            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{in_file}\n\n期望得到：\n```\n{open(ans_file).read()}\n```\n但得到输出：\n```\n{open(out_file).read()}\n```\n\n'
             return ERROR, summary
         else:
             print(f"Accepted!")
@@ -143,6 +147,7 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
     summary += f'## AC: {mainfile} ({len(examples)} tests)\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n\n'
     print(f"::endgroup::")
     return ACCEPTED, summary
+
 
 def test_py(mainfile, examples, skiptest, summary):
     """
@@ -177,10 +182,10 @@ def test_py(mainfile, examples, skiptest, summary):
     for e in examples:
         in_file = e
         out_file = e.replace(".in", ".out")
-        ans_file = e.replace(".in", ".ans")        
+        ans_file = e.replace(".in", ".ans")
         command = f"{sys.executable} {mainfile}"
-        print(f'{mainfile} < {e} > {e.replace(".in", ".out")}', end=" ")
-        
+        print(f"{mainfile} < {in_file} > {out_file}", end=" ")
+
         result = subprocess.run(
             [sys.executable, mainfile],
             text=True,
@@ -188,28 +193,26 @@ def test_py(mainfile, examples, skiptest, summary):
             capture_output=True,
         )
         open(out_file, "w+").write(result.stdout)
-        
+
         if result.returncode != 0:
             print(f"\n::endgroup::")
             print(
                 f"::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}"
             )
-            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
+            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{in_file}\n- **错误代码**：{result.returncode}\n\n'
             return ERROR, summary
         else:
             print("OK")
 
-        print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=" ")
+        print(f"diff -b -B {out_file} {ans_file}", end=" ")
         check_result = subprocess.run(
-            f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', 
-            shell=True, 
-            stdout=subprocess.DEVNULL
+            f"diff -b -B {out_file} {ans_file}", shell=True, stdout=subprocess.DEVNULL
         )
-        
+
         if check_result.returncode != 0:
             print(f"\n::endgroup::")
-            print(f"::error file={e},title=WA!::Wrong Answer on: {e}")
-            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n\n期望得到：\n```\n{open(e.replace(".in", ".ans")).read()}\n```\n但得到输出：\n```\n{open(e.replace(".in", ".out")).read()}\n```\n\n'
+            print(f"::error file={in_file},title=WA!::Wrong Answer on: {in_file}")
+            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{in_file}\n\n期望得到：\n```\n{open(ans_file).read()}\n```\n但得到输出：\n```\n{open(out_file).read()}\n```\n\n'
             return ERROR, summary
         else:
             print(f"Accepted!")
@@ -217,6 +220,7 @@ def test_py(mainfile, examples, skiptest, summary):
     summary += f'## AC: {mainfile} ({len(examples)} tests)\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n\n'
     print(f"::endgroup::")
     return ACCEPTED, summary
+
 
 # Get language to test from argument
 parser = argparse.ArgumentParser()
