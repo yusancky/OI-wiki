@@ -108,7 +108,7 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
             f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.cpp', '.skip_test')}"
         )
         summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 辅助文件：`{", ".join(auxfiles)}`\n- 测试点：`{", ".join(examples)}`\n- 编译指令：{compile_command}\n成功编译，但因数据不存在未能进一步测试。**如果不希望进行测试，请创建{mainfile.replace(".cpp", ".skip_test")}**\n\n'
-        return ACCEPTED, summary
+        return ERROR, summary
 
     # 逐个测试
     executable = mainfile.split(".")[0]
@@ -175,8 +175,8 @@ def test_py(mainfile, examples, skiptest, summary):
         print(
             f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.py', '.skip_test')}"
         )
-        summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n成功编译，但因数据不存在未能进一步测试。**如果不希望进行测试，请创建{mainfile.replace(".py", ".skip_test")}**\n\n'
-        return ACCEPTED, summary
+        summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n因数据不存在未能测试。**如果不希望进行测试，请创建{mainfile.replace(".py", ".skip_test")}**\n\n'
+        return ERROR, summary
 
     # 逐个测试
     for e in examples:
