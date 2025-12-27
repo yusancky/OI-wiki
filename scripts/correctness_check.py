@@ -57,13 +57,10 @@ def derive_test_files(mainfile):
     return auxfiles, examples, skiptest
 
 
-def check_cpp(mainfile, summary):
+def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
     """
     Check correctness of one instance of example code.
     """
-    # Derive auxfiles, examples, and skiptest from mainfile
-    auxfiles, examples, skiptest = derive_test_files(mainfile)
-
     print(f"::group::Test for {mainfile}...")
     # 是否跳过测试
     if skiptest:
@@ -161,10 +158,12 @@ cnt_ac, cnt_error, cnt_skip = 0, 0, 0
 summary = ""
 
 for mainfile in mainfiles:
+    # Derive auxfiles, examples, and skiptest from mainfile
+    auxfiles, examples, skiptest = derive_test_files(mainfile)
     """
     Here is now a test for C++ only. Needed to be modified.
     """
-    correctness, summary = check_cpp(mainfile, summary)
+    correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
     cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
     cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
     cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
