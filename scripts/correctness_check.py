@@ -237,9 +237,6 @@ summary = ""
 for mainfile in mainfiles:
     # Derive auxfiles, examples, and skiptest from mainfile
     auxfiles, examples, skiptest = derive_test_files(mainfile)
-    """
-    Here is now a test for C++ only. Needed to be modified.
-    """
     if language == "cpp":
         correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
     elif language == "py":
