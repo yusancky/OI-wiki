@@ -1,4 +1,4 @@
-# Check correctness of C++ example code.
+# Check correctness of example code.
 # input: mainfile list (from get_files_to_test.py, read from $FILES_TO_TEST)
 # output: None. Print to GitHub Action step summary.
 
