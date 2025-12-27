@@ -2,6 +2,7 @@
 # input: mainfile list (from get_files_to_test.py, read from $FILES_TO_TEST)
 # output: None. Print to GitHub Action step summary.
 
+import argparse
 import os
 import subprocess
 
@@ -140,14 +141,22 @@ def correctness_check(mainfile, auxfiles, examples, skiptest, summary):
     print(f"::endgroup::")
     return ACCEPTED, summary
 
+# Get language to test from argument
+parser = argparse.ArgumentParser()
+parser.add_argument("-language", type=str, required=True, choices=["cpp", "py"])
+language = parser.parse_args().language
 
 # Get mainfiles from environment variable (space-separated list)
 mainfiles_str = os.environ.get("FILES_TO_TEST", "")
 mainfiles = mainfiles_str.split() if mainfiles_str else []
-summary = ""
 
 cnt_ac, cnt_error, cnt_skip = 0, 0, 0
+summary = ""
+
 for mainfile in mainfiles:
+    """
+    Here is now a test for C++ only. Needed to be modified.
+    """
     # Derive auxfiles, examples, and skiptest from mainfile
     auxfiles, examples, skiptest = derive_test_files(mainfile)
     
