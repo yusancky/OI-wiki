@@ -40,10 +40,10 @@ jobs:
           all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
         run: python scripts/get_files_to_test.py
 
-  correctness:
-    name: OI-wiki Offline Test
+  cpp-correctness:
+    name: OI-wiki C++ Offline Test
     needs: file-list
-    if: ${{ needs.file-list.outputs.any_changed == 'true' }}
+    if: ${{ needs.file-list.outputs.TEST_CPP_FILES != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -59,11 +59,11 @@ jobs:
       - name: Correctness Check
         env: 
           FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
-        run: python scripts/correctness_check.py
+        run: python scripts/correctness_check_cpp.py
 
-  undefinedbehaviors-ubuntu:
-    name: UB Check - x86_64 Ubuntu
-    needs: [file-list, correctness]
+  cpp-undefinedbehaviors-ubuntu:
+    name: C++ UB Check - x86_64 Ubuntu
+    needs: [file-list, cpp-correctness]
     runs-on: ubuntu-latest
     container: ghcr.io/trickeye/ubuntu_gcc1x:clang
     outputs:
@@ -83,9 +83,9 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
 
-  undefinedbehaviors-macos:
-    name: UB Check - Arm64 MacOS
-    needs: [file-list, correctness]
+  cpp-undefinedbehaviors-macos:
+    name: C++ UB Check - Arm64 MacOS
+    needs: [file-list, cpp-correctness]
     runs-on: macos-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -108,9 +108,9 @@ jobs:
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
 
-  undefinedbehaviors-rv:
-    name: UB Check - RISC-V Ubuntu
-    needs: [file-list, correctness]
+  cpp-undefinedbehaviors-rv:
+    name: C++ UB Check - RISC-V Ubuntu
+    needs: [file-list, cpp-correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -147,9 +147,9 @@ jobs:
         # The environment variables are set in Launch Risc-V Docker step
         run: docker exec ubtest python3 scripts/ub-check.py
 
-  undefinedbehaviors-windows:
-    name: UB Check - x86_64 Windows
-    needs: [file-list, correctness]
+  cpp-undefinedbehaviors-windows:
+    name: C++ UB Check - x86_64 Windows
+    needs: [file-list, cpp-correctness]
     runs-on: windows-2025
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -183,9 +183,9 @@ jobs:
           python scripts/ub-check.py
 
 
-  undefinedbehaviors-alpine:
-    name: UB Check - x86_64 Alpine
-    needs: [file-list, correctness]
+  cpp-undefinedbehaviors-alpine:
+    name: C++ UB Check - x86_64 Alpine
+    needs: [file-list, cpp-correctness]
     runs-on: ubuntu-latest
     outputs:
       output: ${{ steps.set-output.outputs.output }}
@@ -211,3 +211,20 @@ jobs:
           RUNS_ON: x86_64 Alpine
           PYTHONIOENCODING: UTF-8
         run: python3 scripts/ub-check.py
+
+  py-correctness:
+    name: OI-wiki Python Offline Test
+    needs: file-list
+    if: ${{ needs.file-list.outputs.TEST_PY_FILES != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - name: Correctness Check
+        env: 
+          FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_PY_FILES }}
+        run: python scripts/correctness_check_py.py
