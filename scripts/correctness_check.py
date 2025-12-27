@@ -163,7 +163,10 @@ for mainfile in mainfiles:
     """
     Here is now a test for C++ only. Needed to be modified.
     """
-    correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
+    if language == "cpp":
+        correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
+    elif language == "py":
+        correctness, summary = test_py(mainfile, examples, skiptest, summary)
     cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
     cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
     cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
