@@ -183,7 +183,6 @@ def test_py(mainfile, examples, skiptest, summary):
         in_file = e
         out_file = e.replace(".in", ".out")
         ans_file = e.replace(".in", ".ans")
-        command = f"{sys.executable} {mainfile}"
         print(f"{mainfile} < {in_file} > {out_file}", end=" ")
 
         result = subprocess.run(
