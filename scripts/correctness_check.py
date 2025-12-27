@@ -20,7 +20,7 @@ def derive_test_files(mainfile):
 
     Returns:
         tuple: (auxfiles, examples, skiptest)
-            auxfiles: List of all .cpp files with same basename (including mainfile) if mainfile has .cpp extension, otherwise empty list
+            auxfiles: List of all `.cpp` files with same basename (including mainfile) if mainfile has `.cpp` extension, otherwise `[]`
             examples: List of .in files that have corresponding .ans files
             skiptest: Boolean indicating if .skip_test file exists
     """
@@ -156,6 +156,7 @@ def test_py(mainfile, examples, skiptest, summary):
         print(f"::endgroup::")
         return SKIPPED, summary
 
+    # 检测文件存在
     for file in examples:
         if not os.path.exists(file):
             print(f"::endgroup::")
@@ -176,44 +177,28 @@ def test_py(mainfile, examples, skiptest, summary):
     for e in examples:
         in_file = e
         out_file = e.replace(".in", ".out")
-        ans_file = e.replace(".in", ".ans")
-        
-        # 检查输入和答案文件是否存在
-        if not (os.path.exists(in_file) and os.path.exists(ans_file)):
-            print(f"\n::endgroup::")
-            print(
-                f"::warning file={mainfile},title=样例不存在::样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件\n::endgroup::"
-            )
-            summary += f"## 找不到样例文件：{mainfile}\n对{mainfile}的测试因找不到样例文件而被迫中止\n\n"
-            return ERROR, summary
-        
+        ans_file = e.replace(".in", ".ans")        
         command = f"{sys.executable} {mainfile}"
         print(f'{mainfile} < {e} > {e.replace(".in", ".out")}', end=" ")
         
-        try:
-            result = subprocess.run(
-                [sys.executable, mainfile],
-                text=True,
-                input=open(in_file).read(),
-                capture_output=True,
-                timeout=30,
-            )
-            open(out_file, "w+").write(result.stdout)
-            
-            if result.returncode != 0:
-                print(f"\n::endgroup::")
-                print(
-                    f"::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}"
-                )
-                summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
-                return ERROR, summary
-            else:
-                print("OK")
-        except subprocess.TimeoutExpired:
+        result = subprocess.run(
+            [sys.executable, mainfile],
+            text=True,
+            input=open(in_file).read(),
+            capture_output=True,
+            timeout=30,
+        )
+        open(out_file, "w+").write(result.stdout)
+        
+        if result.returncode != 0:
             print(f"\n::endgroup::")
-            print(f"::error file={mainfile},title=TLE!::Time Limit Exceeded on: {e}")
-            summary += f'## TLE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **超时测试点**：{e}\n\n'
+            print(
+                f"::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}"
+            )
+            summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
             return ERROR, summary
+        else:
+            print("OK")
 
         print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=" ")
         check_result = subprocess.run(
