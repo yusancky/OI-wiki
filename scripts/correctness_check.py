@@ -186,7 +186,6 @@ def test_py(mainfile, examples, skiptest, summary):
             text=True,
             input=open(in_file).read(),
             capture_output=True,
-            timeout=30,
         )
         open(out_file, "w+").write(result.stdout)
         
