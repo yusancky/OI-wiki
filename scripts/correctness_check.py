@@ -144,6 +144,95 @@ def test_cpp(mainfile, auxfiles, examples, skiptest, summary):
     print(f"::endgroup::")
     return ACCEPTED, summary
 
+def test_py(mainfile, examples, skiptest, summary):
+    """
+    Check correctness of one instance of example code.
+    """
+    print(f"::group::Test for {mainfile}...")
+    # 是否跳过测试
+    if skiptest:
+        summary += f'## 跳过：{mainfile}\n测试因 {mainfile + ".skip_test"} 文件存在而跳过\n\n'
+        print(f"::group::{mainfile}: test skipped")
+        print(f"::endgroup::")
+        return SKIPPED, summary
+
+    for file in examples:
+        if not os.path.exists(file):
+            print(f"::endgroup::")
+            print(f"::error file={file},title=file {file} not found::")
+            summary += f"## 找不到文件：{file}\n对{mainfile}的测试因找不到文件{file}而被迫中止\n\n"
+            return ERROR, summary
+
+    # 对不提供数据点的特殊处理
+    if len(examples) == 0:
+        print(f"\n::endgroup::")
+        print(
+            f"::warning file={mainfile},title=No data!::Can't find data to test. If you don't want this notice, create {mainfile.replace('.py', '.skip_test')}"
+        )
+        summary += f'## No Data: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n成功编译，但因数据不存在未能进一步测试。**如果不希望进行测试，请创建{mainfile.replace(".py", ".skip_test")}**\n\n'
+        return ACCEPTED, summary
+
+    # 逐个测试
+    for e in examples:
+        in_file = e
+        out_file = e.replace(".in", ".out")
+        ans_file = e.replace(".in", ".ans")
+        
+        # 检查输入和答案文件是否存在
+        if not (os.path.exists(in_file) and os.path.exists(ans_file)):
+            print(f"\n::endgroup::")
+            print(
+                f"::warning file={mainfile},title=样例不存在::样例输入 {in_file} 或样例输出 {ans_file} 不存在，无法校验输出结果，请上传对应样例。如果无法提供样例，请在代码文件所在文件夹创建扩展名为 .skip_test 的文件\n::endgroup::"
+            )
+            summary += f"## 找不到样例文件：{mainfile}\n对{mainfile}的测试因找不到样例文件而被迫中止\n\n"
+            return ERROR, summary
+        
+        command = f"{sys.executable} {mainfile}"
+        print(f'{mainfile} < {e} > {e.replace(".in", ".out")}', end=" ")
+        
+        try:
+            result = subprocess.run(
+                [sys.executable, mainfile],
+                text=True,
+                input=open(in_file).read(),
+                capture_output=True,
+                timeout=30,
+            )
+            open(out_file, "w+").write(result.stdout)
+            
+            if result.returncode != 0:
+                print(f"\n::endgroup::")
+                print(
+                    f"::error file={mainfile},title=RE!::Runtime Error! with error code: {result.returncode}"
+                )
+                summary += f'## RE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n- **错误代码**：{result.returncode}\n\n'
+                return ERROR, summary
+            else:
+                print("OK")
+        except subprocess.TimeoutExpired:
+            print(f"\n::endgroup::")
+            print(f"::error file={mainfile},title=TLE!::Time Limit Exceeded on: {e}")
+            summary += f'## TLE: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **超时测试点**：{e}\n\n'
+            return ERROR, summary
+
+        print(f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', end=" ")
+        check_result = subprocess.run(
+            f'diff -b -B {e.replace(".in", ".out")} {e.replace(".in", ".ans")}', 
+            shell=True, 
+            stdout=subprocess.DEVNULL
+        )
+        
+        if check_result.returncode != 0:
+            print(f"\n::endgroup::")
+            print(f"::error file={e},title=WA!::Wrong Answer on: {e}")
+            summary += f'## WA: {mainfile}\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n- **出错测试点**：{e}\n\n期望得到：\n```\n{open(e.replace(".in", ".ans")).read()}\n```\n但得到输出：\n```\n{open(e.replace(".in", ".out")).read()}\n```\n\n'
+            return ERROR, summary
+        else:
+            print(f"Accepted!")
+
+    summary += f'## AC: {mainfile} ({len(examples)} tests)\n- 主要文件：`{mainfile}`\n- 测试点：`{", ".join(examples)}`\n\n'
+    print(f"::endgroup::")
+    return ACCEPTED, summary
 
 # Get language to test from argument
 parser = argparse.ArgumentParser()
