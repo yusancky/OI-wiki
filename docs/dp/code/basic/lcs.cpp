@@ -11,7 +11,7 @@ int dp() {
         f[i][j] = f[i - 1][j - 1] + 1;
       else
         f[i][j] = std::max(f[i - 1][j], f[i][j - 1]);
-  return f[n][m];
+  return f[n][m]; // 返回 f[n][m]
 }
 
 // --8<-- [end:core]
