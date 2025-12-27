@@ -29,15 +29,13 @@ jobs:
             docs/**/*.in
             docs/**/*.ans
       - uses: actions/setup-python@v6
-        if: steps.changed-files.outputs.any_changed == 'true'
         with:
           python-version: '3.14'
       - name: Get Files to Test
-        if: steps.changed-files.outputs.any_changed == 'true'
         id: GetFiles
+        run: python scripts/get_files_to_test.py
         env:
           all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: python scripts/get_files_to_test.py
 
   cpp-correctness:
     name: OI-wiki C++ Offline Test
