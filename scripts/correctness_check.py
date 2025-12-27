@@ -11,9 +11,9 @@ ERROR = 0
 SKIPPED = -1
 
 
-def derive_test_files(mainfile):
+def derive_cpp_test_files(mainfile):
     """
-    Derive auxfiles, examples, and skiptest status from mainfile.
+    Derive auxfiles, examples, and skiptest status from C++ mainfile.
     
     Args:
         mainfile: Path to the main source code file
@@ -58,7 +58,7 @@ def check_cpp(mainfile, summary):
     Check correctness of one instance of example code.
     """
     # Derive auxfiles, examples, and skiptest from mainfile
-    auxfiles, examples, skiptest = derive_test_files(mainfile)
+    auxfiles, examples, skiptest = derive_cpp_test_files(mainfile)
 
     print(f"::group::Test for {mainfile}...")
     # 是否跳过测试
