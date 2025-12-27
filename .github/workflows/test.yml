@@ -58,7 +58,7 @@ jobs:
       - name: Correctness Check
         env: 
           FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_CPP_FILES }}
-        run: python scripts/correctness_check_cpp.py
+        run: python scripts/correctness_check.py -language cpp
 
   cpp-undefinedbehaviors-ubuntu:
     name: C++ UB Check - x86_64 Ubuntu
@@ -226,4 +226,4 @@ jobs:
       - name: Correctness Check
         env: 
           FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_PY_FILES }}
-        run: python scripts/correctness_check_py.py
+        run: python scripts/correctness_check.py -language py
