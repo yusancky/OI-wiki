@@ -42,7 +42,7 @@ jobs:
   cpp-correctness:
     name: OI-wiki C++ Offline Test
     needs: file-list
-    if: ${{ needs.file-list.outputs.TEST_CPP_FILES != '' }}
+    if: ${{ needs.file-list.outputs.TEST_CPP_FILES != 'None' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -214,7 +214,7 @@ jobs:
   py-correctness:
     name: OI-wiki Python Offline Test
     needs: file-list
-    if: ${{ needs.file-list.outputs.TEST_PY_FILES != '' }}
+    if: ${{ needs.file-list.outputs.TEST_PY_FILES != 'None' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
