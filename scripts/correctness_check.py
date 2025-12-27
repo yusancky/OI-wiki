@@ -222,9 +222,11 @@ def test_py(mainfile, examples, skiptest, summary):
 
 
 # Get language to test from argument
-parser = argparse.ArgumentParser()
-parser.add_argument("--language", type=str, required=True, choices=["cpp", "py"])
-language = parser.parse_args().language
+if __name__ == '__main__':
+    # Ensures the following code runs only when this script is executed directly, not when imported as a module by `ub-check.py`, preventing unintended execution or missing argument errors.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--language", type=str, required=True, choices=["cpp", "py"])
+    language = parser.parse_args().language
 
 # Get mainfiles from environment variable (space-separated list)
 mainfiles_str = os.environ.get("FILES_TO_TEST", "")
@@ -236,13 +238,14 @@ summary = ""
 for mainfile in mainfiles:
     # Derive auxfiles, examples, and skiptest from mainfile
     auxfiles, examples, skiptest = derive_test_files(mainfile)
-    if language == "cpp":
-        correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
-    elif language == "py":
-        correctness, summary = test_py(mainfile, examples, skiptest, summary)
-    cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
-    cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
-    cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
+    if __name__ == '__main__':
+        if language == "cpp":
+            correctness, summary = test_cpp(mainfile, auxfiles, examples, skiptest, summary)
+        elif language == "py":
+            correctness, summary = test_py(mainfile, examples, skiptest, summary)
+        cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
+        cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
+        cnt_skip = cnt_skip + 1 if correctness == SKIPPED else cnt_skip
 
 with open(os.environ.get("GITHUB_STEP_SUMMARY"), "w") as f:
     f.write(
