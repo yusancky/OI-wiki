@@ -14,26 +14,30 @@ SKIPPED = -1
 def derive_test_files(mainfile):
     """
     Derive auxfiles, examples, and skiptest status from mainfile.
-    
+
     Args:
         mainfile: Path to the main source code file
-        
+
     Returns:
         tuple: (auxfiles, examples, skiptest)
-            auxfiles: List of all .cpp files with same basename (including mainfile)
+            auxfiles: List of all .cpp files with same basename (including mainfile) if mainfile has .cpp extension, otherwise empty list
             examples: List of .in files that have corresponding .ans files
             skiptest: Boolean indicating if .skip_test file exists
     """
     dirname = os.path.dirname(mainfile)
     basename = os.path.splitext(os.path.basename(mainfile))[0]
-    
-    # Find all auxiliary files (all .cpp files with same basename)
-    auxfiles = []
-    for root, _, files in os.walk(dirname):
-        for file in files:
-            if file.split(".")[0] == basename and file.endswith(".cpp"):
-                auxfiles.append(os.path.normpath(os.path.join(root, file)))
-    
+
+    # Check if the mainfile has .cpp extension
+    if not mainfile.endswith(".cpp"):
+        auxfiles = []
+    else:
+        # Find all auxiliary files (all .cpp files with same basename)
+        auxfiles = []
+        for root, _, files in os.walk(dirname):
+            for file in files:
+                if file.split(".")[0] == basename and file.endswith(".cpp"):
+                    auxfiles.append(os.path.normpath(os.path.join(root, file)))
+
     # Find example test cases in corresponding examples directory
     examples = []
     examples_dir = dirname.replace("/code/", "/examples/")
@@ -46,10 +50,10 @@ def derive_test_files(mainfile):
                     and os.path.exists(os.path.join(root, file.replace(".in", ".ans")))
                 ):
                     examples.append(os.path.normpath(os.path.join(root, file)))
-    
+
     # Check if test should be skipped
     skiptest = os.path.exists(os.path.join(dirname, basename + ".skip_test"))
-    
+
     return auxfiles, examples, skiptest
 
 
@@ -143,6 +147,7 @@ def check_cpp(mainfile, summary):
     print(f"::endgroup::")
     return ACCEPTED, summary
 
+
 # Get language to test from argument
 parser = argparse.ArgumentParser()
 parser.add_argument("-language", type=str, required=True, choices=["cpp", "py"])
@@ -158,7 +163,7 @@ summary = ""
 for mainfile in mainfiles:
     """
     Here is now a test for C++ only. Needed to be modified.
-    """  
+    """
     correctness, summary = check_cpp(mainfile, summary)
     cnt_ac = cnt_ac + 1 if correctness == ACCEPTED else cnt_ac
     cnt_error = cnt_error + 1 if correctness == ERROR else cnt_error
