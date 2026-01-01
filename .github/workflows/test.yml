@@ -10,7 +10,7 @@ on:
 
 jobs:
   file-list:
-    name: Make File List
+    name: Make File List 
     runs-on: ubuntu-latest
     outputs:
       TEST_CPP_FILES: ${{ steps.GetFiles.outputs.TEST_CPP_FILES }}
