@@ -32,9 +32,9 @@ jobs:
         with:
           python-version: '3.14'
       - name: Install uv
-         uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7
       - name: Install Python dependencies
-         run: uv sync
+        run: uv sync
       - name: Get Files to Test
         id: GetFiles
         env:
@@ -54,9 +54,9 @@ jobs:
         with:
           python-version: '3.14'
       - name: Install uv
-         uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v7
       - name: Install Python dependencies
-         run: uv sync
+        run: uv sync
       - name: Install C++
         run: |
           sudo apt-get update
@@ -230,9 +230,9 @@ jobs:
         with:
           python-version: '3.14'
       - name: Install uv
-         uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v6
       - name: Install Python dependencies
-         run: uv sync
+        run: uv sync
       - name: Correctness Check
         env: 
           FILES_TO_TEST: ${{ needs.file-list.outputs.TEST_PY_FILES }}
