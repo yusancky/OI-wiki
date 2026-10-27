@@ -33,7 +33,7 @@ jobs:
           files: |
             docs/**/*.md
             docs/**/*.tex
-      - name: Select files for testing (full or changed subset)
+      - name: Determine file list for testing
         id: changed-files
         shell: bash
         run: |
